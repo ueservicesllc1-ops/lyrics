@@ -4,6 +4,9 @@ import { useAuth } from '@/context/AuthContext';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import { Button } from './ui/button';
+import { Shield } from 'lucide-react';
+
+const ADMIN_EMAIL = 'ueservicesllc1@gmail.com';
 
 export default function AuthStatus() {
   const { user, loading } = useAuth();
@@ -15,10 +18,18 @@ export default function AuthStatus() {
   if (user) {
     return (
       <div className="flex items-center gap-4">
-        <span className="text-sm text-muted-foreground hidden sm:inline">
+        {user.email === ADMIN_EMAIL && (
+          <Link href="/admin">
+            <Button variant="ghost" size="icon" className="hover:bg-blue-800 hover:text-white">
+              <Shield className="h-6 w-6" />
+              <span className="sr-only">Admin Panel</span>
+            </Button>
+          </Link>
+        )}
+        <span className="text-sm hidden sm:inline">
           {user.email || user.displayName || 'Usuario'}
         </span>
-        <Button variant="outline" onClick={() => auth.signOut()}>
+        <Button variant="outline" onClick={() => auth.signOut()} className="bg-transparent border-white text-white hover:bg-white hover:text-blue-900">
           Cerrar Sesión
         </Button>
       </div>
@@ -27,7 +38,7 @@ export default function AuthStatus() {
 
   return (
     <Link href="/login">
-      <Button variant="outline">Iniciar Sesión</Button>
+      <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white hover:text-blue-900">Iniciar Sesión</Button>
     </Link>
   );
 }

@@ -21,8 +21,14 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
-            <header className="p-4 flex justify-end">
-              <AuthStatus />
+            <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-blue-900 text-white">
+              <div className="container flex h-14 items-center">
+                <div className="flex flex-1 items-center justify-end space-x-4">
+                  <nav className="flex items-center space-x-2">
+                    <AuthStatus />
+                  </nav>
+                </div>
+              </div>
             </header>
             <main className="flex-grow">{children}</main>
           </div>
