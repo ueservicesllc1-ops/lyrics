@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { getFirestore, collection, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 const db = getFirestore(app);
 
@@ -37,7 +38,6 @@ type State = {
 
 export async function saveSong(prevState: State, formData: FormData): Promise<State> {
   const userId = formData.get('userId');
-  // We allow anonymous submissions, but log who created it if available.
   if (!userId) {
     return { message: 'Error: ID de usuario no proporcionado.', errors: {} };
   }
@@ -98,8 +98,8 @@ export async function deleteSong(songId: string): Promise<{ message: string | nu
   }
 }
 
-// Client-side action to update a song
-export async function updateSongClient(id: string, data: z.infer<typeof formSchema>): Promise<State> {
+// THIS IS NOW A CLIENT-CALLABLE FUNCTION
+export async function updateSongClient(id: string, data: z.infer<typeof formSchema>): Promise<{ message: string | null; errors?: any; }> {
     if (!id) {
         return { message: 'ID de canción no válido.', errors: {} };
     }
@@ -123,12 +123,11 @@ export async function updateSongClient(id: string, data: z.infer<typeof formSche
             artist,
             lyrics,
             slug,
-            updatedAt: serverTimestamp() // track updates
+            updatedAt: serverTimestamp()
         });
         
-        revalidatePath(`/admin/library`);
-        revalidatePath(`/admin/library/${id}/edit`);
-        revalidatePath('/');
+        // Since this runs on the client, we can't use revalidatePath.
+        // The page will be refreshed via router.push in the form component.
         
         return { message: 'success' };
 

@@ -2,10 +2,9 @@
 "use client";
 
 import { useState, useEffect, useTransition } from 'react';
-import { useFormStatus } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
 import { type Song } from '@/lib/songs';
-import { updateSongClient } from '@/lib/actions/song-actions'; // We will create this
+import { updateSongClient } from '@/lib/actions/song-actions';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -60,20 +59,24 @@ export function EditSongForm({ song }: { song: Song }) {
     }
     
     startTransition(async () => {
+        // This is now calling a client-side function that wraps the db call
         const result = await updateSongClient(song.id, validatedFields.data);
-        setState(result);
         if (result.message === 'success') {
             toast({
                 title: "¡Éxito!",
                 description: "La canción ha sido actualizada correctamente."
             });
-            router.push('/admin/library');
+            // Manually revalidate by pushing to the router.
+            router.push('/admin/library'); 
+            router.refresh();
+        } else {
+            // Set the state to show the error message from the client function
+            setState(result);
         }
     });
   }
   
   useEffect(() => {
-    // This effect is now just for showing non-success toast messages
     if (state.message && state.message !== 'success') {
       toast({
         variant: 'destructive',
