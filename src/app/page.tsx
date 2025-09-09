@@ -40,32 +40,31 @@ export default function DashboardPage() {
         </p>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Link href="/admin/songs" className="block hover:shadow-lg transition-shadow rounded-lg">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>Biblioteca de Canciones</CardTitle>
-              <CardDescription>
-                Explora todas las canciones disponibles en el repertorio central.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-                {/* Contenido adicional puede ir aquí si es necesario */}
-            </CardContent>
-          </Card>
-        </Link>
-        <Link href="/setlists" className="block hover:shadow-lg transition-shadow rounded-lg">
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>Mis Setlists</CardTitle>
-              <CardDescription>
-                Crea y organiza tus setlists personalizados para los eventos.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-               {/* Contenido adicional puede ir aquí si es necesario */}
-            </CardContent>
-          </Card>
-        </Link>
+        {/* Ya no es un enlace */}
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle>Biblioteca de Canciones</CardTitle>
+            <CardDescription>
+              Explora todas las canciones disponibles en el repertorio central.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Contenido adicional puede ir aquí si es necesario */}
+          </CardContent>
+        </Card>
+        
+        {/* Ya no es un enlace */}
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle>Mis Setlists</CardTitle>
+            <CardDescription>
+              Crea y organiza tus setlists personalizados para los eventos.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Contenido adicional puede ir aquí si es necesario */}
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
