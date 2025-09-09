@@ -16,8 +16,7 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
@@ -36,20 +35,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const saveUserToFirestore = async (user: User | null) => {
-    if (!user) return;
+  const saveUserToFirestore = async (user: User) => {
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
@@ -68,31 +58,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
     
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        await saveUserToFirestore(user);
-      } else {
-        setUser(null);
-      }
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
     });
-
-    // Handle redirect result
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result && result.user) {
-          await saveUserToFirestore(result.user);
-          setUser(result.user);
-        }
-      })
-      .catch((error) => {
-        console.error("Error getting redirect result:", error);
-      }).finally(() => {
-        setLoading(false);
-      });
-
-
     return () => unsubscribe();
   }, []);
 
@@ -112,8 +81,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    setLoading(true);
-    await signInWithRedirect(auth, provider);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await saveUserToFirestore(result.user);
+      return result;
+    } catch (error) {
+       console.error("Error during Google sign-in:", error);
+       throw error;
+    }
   };
 
   const value = {
@@ -126,4 +101,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 }
