@@ -54,18 +54,16 @@ export default function AdminPage() {
                   Ver Biblioteca
                 </Link>
               </Button>
-              <NewSetlistDialog 
-                currentSetlist={[]} 
-                onSetlistSaved={() => {
-                    // We can show a toast or just let the dialog close
-                }}
-                userId={user.uid}
-              >
-                 <Button variant="outline" className="justify-start p-6 text-lg">
-                    <PlusCircle className="mr-4 h-6 w-6" />
-                    Crear Setlist
-                </Button>
-              </NewSetlistDialog>
+              
+              {user?.uid && (
+                <NewSetlistDialog 
+                  currentSetlist={[]} 
+                  onSetlistSaved={() => {
+                      // We can show a toast or just let the dialog close
+                  }}
+                  userId={user.uid}
+                />
+              )}
 
               <Button variant="outline" className="justify-start p-6 text-lg">
                 <Bell className="mr-4 h-6 w-6" />

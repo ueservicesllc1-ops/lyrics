@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar as CalendarIcon, Loader2, AlertTriangle } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, AlertTriangle, PlusCircle } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -32,10 +32,9 @@ type NewSetlistDialogProps = {
     currentSetlist: Song[];
     onSetlistSaved: () => void;
     userId: string;
-    children?: ReactNode; // To allow passing a trigger button
 };
 
-export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId, children }: NewSetlistDialogProps) {
+export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId }: NewSetlistDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -83,7 +82,10 @@ export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId, child
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {children}
+        <Button variant="outline" className="justify-start p-6 text-lg">
+            <PlusCircle className="mr-4 h-6 w-6" />
+            Crear Setlist
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
