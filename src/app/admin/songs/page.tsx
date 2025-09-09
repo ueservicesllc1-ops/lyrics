@@ -59,10 +59,7 @@ export default function SongsPage() {
     try {
       // Consulta para obtener TODAS las canciones, ordenadas por título.
       // Ya no filtramos por userId para que todos vean la biblioteca completa.
-      const q = query(
-        collection(db, 'songs'),
-        orderBy('title', 'asc')
-      );
+      const q = query(collection(db, 'songs'), orderBy('title', 'asc'));
       const querySnapshot = await getDocs(q);
       const songsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Song)
@@ -108,7 +105,7 @@ export default function SongsPage() {
         title,
         artist,
         lyrics,
-        userId: user.uid,
+        userId: user.uid, // Guardamos el ID del admin que la creó
       });
       setTitle('');
       setArtist('');
@@ -137,8 +134,8 @@ export default function SongsPage() {
             Todas las canciones disponibles en el repertorio.
           </p>
         </div>
-        <Link href="/">
-          <Button variant="outline">Volver al Dashboard</Button>
+        <Link href="/admin">
+          <Button variant="outline">Volver al Panel de Admin</Button>
         </Link>
       </header>
 
@@ -192,7 +189,7 @@ export default function SongsPage() {
           </Card>
         )}
 
-        <div className={isAdmin ? '' : 'md:col-span-2'}>
+        <div className={!isAdmin ? 'md:col-span-2' : ''}>
           <Card>
             <CardHeader>
               <CardTitle>Biblioteca</CardTitle>
