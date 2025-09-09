@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { PlusCircle, Calendar as CalendarIcon, Loader2, AlertTriangle } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -27,7 +27,6 @@ import { useToast } from "@/hooks/use-toast";
 import { saveSetlist } from "@/lib/actions/setlist-actions";
 import type { Song } from "@/lib/songs";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { AlertTriangle } from "lucide-react";
 
 type NewSetlistDialogProps = {
     currentSetlist: Song[];
@@ -52,10 +51,13 @@ export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId }: New
         setError("Por favor, selecciona una fecha.");
         return;
     }
+   
     setError(null);
 
     startTransition(async () => {
         const songIds = currentSetlist.map(song => song.id);
+        
+        // Calling the client-side function directly
         const result = await saveSetlist({
             name,
             serviceDate: date,

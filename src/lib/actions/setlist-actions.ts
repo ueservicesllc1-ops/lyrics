@@ -1,17 +1,17 @@
 
-'use server';
-
 import { z } from 'zod';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
-import { revalidatePath } from 'next/cache';
+// No longer a server action, so we remove 'use server' and revalidatePath
 
 const db = getFirestore(app);
 
+// This is now a client-callable function.
+// We allow songIds to be an empty array.
 const setlistSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio.'),
   serviceDate: z.date(),
-  songIds: z.array(z.string()),
+  songIds: z.array(z.string()).optional().default([]),
   userId: z.string().min(1, "Se requiere un ID de usuario."),
 });
 
@@ -24,7 +24,6 @@ export async function saveSetlist(input: SaveSetlistInput): Promise<{ success: b
   if (!validatedFields.success) {
     const errorMessage = validatedFields.error.flatten().fieldErrors;
     console.error("Validation errors:", errorMessage);
-    // Combine all error messages into a single string
     const combinedError = Object.values(errorMessage).flat().join(' ');
     return {
       success: false,
@@ -41,12 +40,11 @@ export async function saveSetlist(input: SaveSetlistInput): Promise<{ success: b
       name,
       serviceDate,
       songIds,
-      userId, // Associated with the logged-in user
+      userId,
       createdAt: serverTimestamp(),
     });
 
-    revalidatePath('/'); // Revalidate the main page to reflect changes if any
-
+    // We can't revalidate from the client, the UI will just reset.
     return { success: true };
   } catch (e: unknown) {
     const error = e as Error;
