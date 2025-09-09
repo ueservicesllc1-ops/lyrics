@@ -55,7 +55,7 @@ export default function SetlistsPage() {
     setIsLoading(true);
     try {
       const q = query(
-        collection(db, 'setlists'),
+        collection(db, 'setlist'),
         where('userId', '==', user.uid)
       );
       const querySnapshot = await getDocs(q);
@@ -91,7 +91,7 @@ export default function SetlistsPage() {
     setIsLoading(true);
 
     try {
-      await addDoc(collection(db, 'setlists'), {
+      await addDoc(collection(db, 'setlist'), {
         name,
         date: Timestamp.fromDate(date),
         userId: user.uid,
