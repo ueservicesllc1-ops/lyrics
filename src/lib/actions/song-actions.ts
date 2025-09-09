@@ -66,8 +66,10 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
     revalidatePath('/');
 
     return { message: 'success' };
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    return { message: 'No se pudo guardar la canción en la base de datos. Por favor, inténtalo de nuevo.' };
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error('Error adding document: ', error);
+    // Return the specific Firebase error message
+    return { message: `Error de base de datos: ${error.message}` };
   }
 }

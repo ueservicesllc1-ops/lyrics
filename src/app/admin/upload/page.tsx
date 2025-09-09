@@ -11,9 +11,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { saveSong } from '@/lib/actions/song-actions';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type State = {
   message?: string | null;
@@ -42,6 +43,9 @@ export default function UploadLyricsPage() {
     const formData = new FormData(event.currentTarget);
 
     startTransition(async () => {
+      // Clear previous error messages
+      setState(initialState);
+      
       const result = await saveSong(undefined, formData);
       setState(result);
 
@@ -52,12 +56,6 @@ export default function UploadLyricsPage() {
         });
         formRef.current?.reset();
         setState(initialState);
-      } else if (result.message) {
-        toast({
-          variant: 'destructive',
-          title: 'Error al guardar',
-          description: result.message,
-        });
       }
     });
   };
@@ -123,6 +121,16 @@ export default function UploadLyricsPage() {
                   'Guardar Canción'
                 )}
               </Button>
+
+              {state.message && state.message !== 'success' && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Error al Guardar</AlertTitle>
+                  <AlertDescription>
+                    {state.message}
+                  </AlertDescription>
+                </Alert>
+              )}
             </form>
           </CardContent>
         </Card>
