@@ -60,34 +60,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
     
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        setLoading(false);
-      } else {
-        // Si no hay usuario, intenta iniciar sesión anónimamente
-        signInAnonymously(auth).catch(error => {
-          console.error("Anonymous sign-in failed: ", error);
-          // Aún así, finaliza la carga para que la UI no se quede bloqueada
-          setLoading(false);
-        });
-      }
+    // This ensures we have an anonymous session for database operations
+    signInAnonymously(auth).catch(error => {
+      console.error("Initial anonymous sign-in failed: ", error);
     });
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser && !currentUser.isAnonymous) {
+        // If a real user logs in, we set them as the user for UI purposes
+        setUser(currentUser);
+      } else {
+        // If no one is logged in, or it's the anonymous user, the user state is null
+        // But the anonymous session from above is still active for Firestore
+        setUser(null);
+      }
+      setLoading(false);
+    });
+
     return () => unsubscribe();
   }, []);
 
-  const signIn = (email: string, pass: string) => {
-    return signInWithEmailAndPassword(auth, email, pass);
+
+  const signIn = async (email: string, pass: string) => {
+    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+    setUser(userCredential.user);
+    return userCredential;
   };
   
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await saveUserToFirestore(userCredential.user);
+    setUser(userCredential.user);
     return userCredential;
   };
   
   const signOutUser = () => {
-    return signOut(auth);
+    // When signing out, we clear the main user, but an anonymous session will persist
+    setUser(null); 
+    return signOut(auth).then(() => {
+      // Re-establish anonymous session after sign out
+      return signInAnonymously(auth);
+    });
   };
   
   const signInWithGoogle = async () => {
@@ -95,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await signInWithPopup(auth, provider);
       await saveUserToFirestore(result.user);
+      setUser(result.user);
       return result;
     } catch (error) {
        console.error("Error during Google sign-in:", error);
@@ -111,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
