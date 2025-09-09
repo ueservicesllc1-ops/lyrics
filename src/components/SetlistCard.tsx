@@ -26,7 +26,7 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
   // Firestore puede devolver Timestamp o un string si lo guardamos así.
   const date = typeof setlist.date === 'string' 
     ? parseISO(setlist.date) 
-    : setlist.date.toDate();
+    : (setlist.date as any).toDate();
     
   const isLocal = setlist.id.startsWith('local-');
 
@@ -34,7 +34,7 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
     <Card>
       <CardHeader>
         <div className="flex items-start gap-2">
-          <CardTitle className="break-words">{setlist.name}</CardTitle>
+          <CardTitle className="min-w-0 break-words">{setlist.name}</CardTitle>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger className="flex-shrink-0 mt-1.5">
