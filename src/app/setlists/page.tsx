@@ -8,6 +8,7 @@ import {
   getDocs,
   query,
   where,
+  orderBy,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,11 +29,21 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, AlertTriangle } from 'lucide-react';
+import { CalendarIcon, AlertTriangle, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import SetlistCard from '@/components/SetlistCard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+  SheetClose,
+} from '@/components/ui/sheet';
 
 export interface Setlist {
   id: string;
@@ -48,6 +59,7 @@ export default function SetlistsPage() {
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { user } = useAuth();
 
   const fetchSetlists = useCallback(async () => {
@@ -56,7 +68,8 @@ export default function SetlistsPage() {
     try {
       const q = query(
         collection(db, 'setlists'),
-        where('userId', '==', user.uid)
+        where('userId', '==', user.uid),
+        orderBy('name', 'asc')
       );
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
@@ -98,6 +111,7 @@ export default function SetlistsPage() {
       name,
       date: date.toISOString(),
       userId: user.uid,
+      songs: []
     };
     
     try {
@@ -105,6 +119,7 @@ export default function SetlistsPage() {
       setName('');
       setDate(undefined);
       await fetchSetlists(); // Refresh the list
+      setIsSheetOpen(false); // Close the sheet on success
     } catch (e) {
       console.error('Error adding document: ', e);
        if ((e as any).code === 'permission-denied') {
@@ -126,70 +141,89 @@ export default function SetlistsPage() {
             Crea y organiza tus setlists para los eventos.
           </p>
         </div>
-        <Link href="/">
-          <Button variant="outline">Volver al Inicio</Button>
-        </Link>
+        <div className="flex items-center gap-4">
+           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Crear Nuevo Setlist
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Crear Nuevo Setlist</SheetTitle>
+                <SheetDescription>
+                  Dale un nombre y una fecha a tu próximo evento. Haz clic en
+                  crear cuando termines.
+                </SheetDescription>
+              </SheetHeader>
+              <form onSubmit={handleCreateSetlist}>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="setlist-name" className="text-right">
+                      Nombre
+                    </Label>
+                    <Input
+                      id="setlist-name"
+                      placeholder="Ej: Servicio Dominical"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="col-span-3"
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="setlist-date" className="text-right">
+                      Fecha
+                    </Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={'outline'}
+                          className={cn(
+                            'col-span-3 justify-start text-left font-normal',
+                            !date && 'text-muted-foreground'
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {date ? (
+                            format(date, 'PPP')
+                          ) : (
+                            <span>Elige una fecha</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          selected={date}
+                          onSelect={setDate}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                   {error && !isLoading && (
+                    <Alert variant="destructive" className="col-span-4">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+                <SheetFooter>
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? 'Creando...' : 'Crear Setlist'}
+                  </Button>
+                </SheetFooter>
+              </form>
+            </SheetContent>
+          </Sheet>
+          <Link href="/">
+            <Button variant="outline">Volver al Inicio</Button>
+          </Link>
+        </div>
       </header>
 
-      <div className="grid gap-12 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Crear Nuevo Setlist</CardTitle>
-            <CardDescription>
-              Dale un nombre y una fecha a tu próximo evento.
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleCreateSetlist}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="setlist-name">Nombre</Label>
-                <Input
-                  id="setlist-name"
-                  placeholder="Ej: Servicio Dominical"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="setlist-date">Día del servicio</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={'outline'}
-                      className={cn(
-                        'w-full justify-start text-left font-normal',
-                        !date && 'text-muted-foreground'
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date ? format(date, 'PPP') : <span>Elige una fecha</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </CardContent>
-            <CardFooter className="flex-col items-start">
-               {error && !isLoading && (
-                <Alert variant="destructive" className="mb-4 w-full">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Creando...' : 'Crear Setlist'}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-
+      <div>
         <Card>
           <CardHeader>
             <CardTitle>Próximos Eventos</CardTitle>
@@ -197,15 +231,15 @@ export default function SetlistsPage() {
               Aquí aparecerán tus setlists guardados.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {isLoading && setlists.length === 0 ? (
               <p>Cargando setlists...</p>
             ) : setlists.length === 0 && !error ? (
-              <p className="text-muted-foreground text-center py-8">
+              <p className="text-muted-foreground text-center py-8 col-span-full">
                 Aún no has creado ningún setlist.
               </p>
             ) : error ? (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="col-span-full">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
