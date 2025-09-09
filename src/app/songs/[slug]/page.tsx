@@ -1,10 +1,12 @@
-import { getSongBySlug } from '@/lib/songs';
-import { LyricPlayer } from '@/components/lyric-player';
+import { getSongBySlug, getSongs } from '@/lib/songs';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { LyricPlayer } from '@/components/lyric-player';
 
+// This page is now deprecated in favor of the main page view.
+// We keep it for direct navigation, but it could be removed.
 export default async function SongPage({ params }: { params: { slug: string } }) {
   const song = await getSongBySlug(params.slug);
 
@@ -22,13 +24,14 @@ export default async function SongPage({ params }: { params: { slug: string } })
           </Link>
         </Button>
       </div>
-      <LyricPlayer song={song} />
+      <div className="fixed inset-0">
+        <LyricPlayer song={song} />
+      </div>
     </div>
   );
 }
 
 export async function generateStaticParams() {
-  const { getSongs } = await import('@/lib/songs');
   const songs = await getSongs();
  
   return songs.map((song) => ({

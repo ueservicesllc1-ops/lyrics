@@ -1,55 +1,101 @@
-import { Header } from "@/components/header";
-import { AiSongSuggester } from "@/components/ai-song-suggester";
-import { SongSearchList } from "@/components/song-search-list";
-import { getSongs } from "@/lib/songs";
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Search } from "lucide-react";
+"use client";
 
-export default async function Home() {
-  const songs = await getSongs();
+import { useState } from "react";
+import { Header } from "@/components/header";
+import { SongSearchList } from "@/components/song-search-list";
+import { getSongs, type Song } from "@/lib/songs";
+import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { BookOpen, ListMusic, Music } from "lucide-react";
+import { LyricPlayer } from "@/components/lyric-player";
+import { Setlist } from "@/components/setlist";
+
+// This is a temporary solution to get all songs on the client.
+// In a real app, you'd fetch or search for songs dynamically.
+const allSongs = await getSongs();
+
+export default function Home() {
+  const [songs] = useState<Song[]>(allSongs);
+  const [setlist, setSetlist] = useState<Song[]>([]);
+  const [activeSong, setActiveSong] = useState<Song | null>(null);
+
+  const handleAddToSetlist = (song: Song) => {
+    setSetlist((prev) => [...prev, song]);
+  };
+
+  const handleRemoveFromSetlist = (songId: string) => {
+    setSetlist((prev) => prev.filter((s) => s.id !== songId));
+  }
+
+  const handleSelectSong = (song: Song) => {
+    setActiveSong(song);
+  };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col h-screen bg-background text-foreground font-sans">
       <Header />
-      <main className="flex-1 w-full">
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-primary/10">
-          <div className="container px-4 md:px-6 text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter">
-              Build Your Perfect Setlist
-            </h1>
-            <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl mt-4">
-              Access a vast library of Christian song lyrics and create beautiful setlists. Powered by AI to help you find the perfect song for any moment.
-            </p>
-          </div>
-        </section>
-        
-        <section className="w-full py-12 md:py-24">
-          <div className="container px-4 md:px-6">
-            <div className="grid gap-8 lg:grid-cols-2">
-              <div className="space-y-4">
-                <AiSongSuggester />
-              </div>
-              <div className="space-y-4">
-                <Card className="h-full">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen/>
-                      Song Library
-                    </CardTitle>
-                    <CardDescription>
-                      Search for a song by title or artist, or browse the full list.
-                    </CardDescription>
-                  </CardHeader>
-                  <SongSearchList songs={songs} />
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 overflow-hidden">
+        {/* Song Library */}
+        <div className="flex flex-col gap-4 overflow-hidden">
+           <Card className="h-full flex flex-col">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen/>
+                  Song Library
+                </CardTitle>
+                <CardDescription>
+                  Search for a song or add it to the setlist.
+                </CardDescription>
+              </CardHeader>
+              <SongSearchList 
+                songs={songs} 
+                onAddToSetlist={handleAddToSetlist}
+                onSelectSong={handleSelectSong}
+              />
+            </Card>
+        </div>
+
+        {/* Current Setlist */}
+        <div className="flex flex-col gap-4 overflow-hidden">
+          <Card className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ListMusic />
+                Current Setlist
+              </CardTitle>
+              <CardDescription>Your list of songs for the event.</CardDescription>
+            </CardHeader>
+             <CardContent className="flex-1 overflow-y-auto">
+                <Setlist 
+                    songs={setlist} 
+                    onSelectSong={handleSelectSong}
+                    onRemoveSong={handleRemoveFromSetlist}
+                />
+             </CardContent>
+          </Card>
+        </div>
+
+        {/* Now Playing */}
+        <div className="flex flex-col gap-4 overflow-hidden">
+           <Card className="h-full flex flex-col">
+             <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Music />
+                  Now Playing
+                </CardTitle>
+                {activeSong && <CardDescription>{activeSong.title} - {activeSong.artist}</CardDescription>}
+              </CardHeader>
+             <div className="flex-1_overflow-hidden_relative">
+                {activeSong ? (
+                  <LyricPlayer song={activeSong} key={activeSong.id}/>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    <p>Select a song to see the lyrics.</p>
+                  </div>
+                )}
+             </div>
+           </Card>
+        </div>
       </main>
-      <footer className="py-6 px-4 md:px-6 border-t border-primary/10 text-center text-sm text-muted-foreground">
-        <p>MySetListApp &copy; {new Date().getFullYear()}</p>
-      </footer>
     </div>
   );
 }
