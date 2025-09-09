@@ -33,8 +33,8 @@ export default function AdminPage() {
             <p className="mb-4">
               Crea y organiza tus setlists para los eventos.
             </p>
-            <Link href="/admin/setlists">
-              <Button variant="secondary">Gestionar Setlists (Próximamente)</Button>
+            <Link href="/setlists">
+              <Button variant="secondary">Gestionar Setlists</Button>
             </Link>
           </CardContent>
         </Card>
