@@ -4,70 +4,70 @@
 
 @layer base {
   :root {
-    --background: 25 35% 15%; /* Dark wood brown */
-    --foreground: 210 20% 98%;
+    --background: 228 3% 11%; /* #1c1c1e */
+    --foreground: 240 14% 94%; /* #f0f0f0 */
 
-    /* Main panel color - brushed metal */
-    --card: 220 6% 80%;
-    --card-foreground: 220 10% 10%;
+    /* Panel color */
+    --card: 240 2% 17%; /* #2c2c2e */
+    --card-foreground: 240 14% 94%; /* #f0f0f0 */
 
-    --popover: 220 6% 75%;
-    --popover-foreground: 220 10% 10%;
+    --popover: 240 2% 17%;
+    --popover-foreground: 240 14% 94%;
     
-    /* Control color - cream/beige for knobs and faders */
-    --primary: 45 40% 85%;
-    --primary-foreground: 220 10% 10%;
+    /* Control color */
+    --primary: 240 1% 22%; /* #3a3a3c */
+    --primary-foreground: 240 14% 94%; /* #f0f0f0 */
 
-    --secondary: 220 6% 70%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 240 2% 17%;
+    --secondary-foreground: 240 14% 94%;
 
-    --muted: 220 6% 65%;
-    --muted-foreground: 220 5% 30%;
+    --muted: 240 1% 33%; /* #555 */
+    --muted-foreground: 240 5% 65%;
 
     /* Accent color for active/hover states */
-    --accent: 45 40% 90%;
-    --accent-foreground: 220 10% 10%;
+    --accent: 45 99% 51%; /* #ffd60a */
+    --accent-foreground: 228 3% 11%; /* #1c1c1e */
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 220 6% 60%;
-    --input: 220 6% 75%;
-    --ring: 45 40% 85%;
-    --radius: 0.5rem;
+    --border: 240 2% 27%; /* #444 */
+    --input: 240 1% 22%; /* #3a3a3c */
+    --ring: 45 99% 51%; /* #ffd60a */
+    --radius: 0.8rem; /* 12px */
   }
  
   .dark {
-    --background: 25 35% 15%; /* Dark wood brown */
-    --foreground: 210 20% 98%;
+    --background: 228 3% 11%; /* #1c1c1e */
+    --foreground: 240 14% 94%; /* #f0f0f0 */
 
-    /* Main panel color - brushed metal */
-    --card: 220 6% 80%;
-    --card-foreground: 220 10% 10%;
+    /* Panel color */
+    --card: 240 2% 17%; /* #2c2c2e */
+    --card-foreground: 240 14% 94%; /* #f0f0f0 */
 
-    --popover: 220 6% 75%;
-    --popover-foreground: 220 10% 10%;
+    --popover: 240 2% 17%;
+    --popover-foreground: 240 14% 94%;
     
-    /* Control color - cream/beige for knobs and faders */
-    --primary: 45 40% 85%;
-    --primary-foreground: 220 10% 10%;
+    /* Control color */
+    --primary: 240 1% 22%; /* #3a3a3c */
+    --primary-foreground: 240 14% 94%; /* #f0f0f0 */
 
-    --secondary: 220 6% 70%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 240 2% 17%;
+    --secondary-foreground: 240 14% 94%;
 
-    --muted: 220 6% 65%;
-    --muted-foreground: 220 5% 30%;
+    --muted: 240 1% 33%; /* #555 */
+    --muted-foreground: 240 5% 65%;
 
     /* Accent color for active/hover states */
-    --accent: 45 40% 90%;
-    --accent-foreground: 220 10% 10%;
+    --accent: 45 99% 51%; /* #ffd60a */
+    --accent-foreground: 228 3% 11%; /* #1c1c1e */
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 220 6% 60%;
-    --input: 220 6% 75%;
-    --ring: 45 40% 85%;
+    --border: 240 2% 27%; /* #444 */
+    --input: 240 1% 22%; /* #3a3a3c */
+    --ring: 45 99% 51%; /* #ffd60a */
   }
 }
 
@@ -76,6 +76,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-card-foreground;
+    @apply bg-background text-foreground;
   }
 }

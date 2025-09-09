@@ -53,6 +53,7 @@ export default function Home() {
                 songs={songs} 
                 onAddToSetlist={handleAddToSetlist}
                 onSelectSong={handleSelectSong}
+                activeSongId={activeSong?.id}
               />
             </Card>
         </div>
@@ -72,6 +73,7 @@ export default function Home() {
                     songs={setlist} 
                     onSelectSong={handleSelectSong}
                     onRemoveSong={handleRemoveFromSetlist}
+                    activeSongId={activeSong?.id}
                 />
              </CardContent>
           </Card>

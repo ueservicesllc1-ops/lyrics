@@ -12,9 +12,10 @@ type SongSearchListProps = {
   songs: Song[];
   onAddToSetlist: (song: Song) => void;
   onSelectSong: (song: Song) => void;
+  activeSongId?: string | null;
 };
 
-export function SongSearchList({ songs, onAddToSetlist, onSelectSong }: SongSearchListProps) {
+export function SongSearchList({ songs, onAddToSetlist, onSelectSong, activeSongId }: SongSearchListProps) {
   const [search, setSearch] = useState("");
 
   const filteredSongs = useMemo(() => {
@@ -43,11 +44,12 @@ export function SongSearchList({ songs, onAddToSetlist, onSelectSong }: SongSear
             filteredSongs.map((song) => (
               <div
                 key={song.id}
-                className="group flex items-center justify-between p-3 rounded-lg hover:bg-primary/10 transition-colors"
+                data-active={song.id === activeSongId}
+                className="group flex items-center justify-between p-3 rounded-md hover:bg-muted/50 transition-colors data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
                 <button onClick={() => onSelectSong(song)} className="text-left flex-1">
                   <h3 className="font-semibold">{song.title}</h3>
-                  <p className="text-sm text-muted-foreground">{song.artist}</p>
+                  <p className="text-sm text-muted-foreground group-data-[active=true]:text-accent-foreground/80">{song.artist}</p>
                 </button>
                 <div className="flex items-center gap-2">
                     <Button 
