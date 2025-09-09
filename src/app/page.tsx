@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -7,8 +8,7 @@ import { Header } from "@/components/header";
 import { SongSearchList } from "@/components/song-search-list";
 import { getSongs, type Song } from "@/lib/songs";
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BookOpen, ListMusic, Music } from "lucide-react";
-import { LyricPlayer } from "@/components/lyric-player";
+import { BookOpen, ListMusic } from "lucide-react";
 import { Setlist } from "@/components/setlist";
 import { AiSongSuggester } from "@/components/ai-song-suggester";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,7 +18,7 @@ export default function Home() {
   const router = useRouter();
   const [songs, setSongs] = useState<Song[]>([]);
   const [setlist, setSetlist] = useState<Song[]>([]);
-  const [activeSong, setActiveSong] = useState<Song | null>(null);
+  const [activeSongId, setActiveSongId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -42,10 +42,15 @@ export default function Home() {
 
   const handleRemoveFromSetlist = (songId: string) => {
     setSetlist((prev) => prev.filter((s) => s.id !== songId));
+    if (activeSongId === songId) {
+        setActiveSongId(null);
+    }
   }
 
   const handleSelectSong = (song: Song) => {
-    setActiveSong(song);
+    // This function is kept for potential future use, like showing a preview,
+    // but it no longer controls the LyricPlayer.
+    setActiveSongId(song.id);
   };
 
   if (loading || !user) {
@@ -56,7 +61,7 @@ export default function Home() {
     <div className="p-4 md:p-8">
       <div className="flex flex-col h-[calc(100vh-4rem)] bg-transparent text-foreground font-sans gap-4">
         <Header />
-        <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
+        <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-hidden">
           <Card className="h-full flex flex-col">
             <Tabs defaultValue="search" className="h-full flex flex-col">
               <CardHeader>
@@ -76,8 +81,8 @@ export default function Home() {
                 <SongSearchList 
                   songs={songs} 
                   onAddToSetlist={handleAddToSetlist}
-                  onSelectSong={handleSelectSong}
-                  activeSongId={activeSong?.id}
+                  onSelectSong={() => {}}
+                  activeSongId={null}
                 />
               </TabsContent>
               <TabsContent value="ai" className="flex-1 overflow-y-auto">
@@ -105,33 +110,12 @@ export default function Home() {
                <CardContent className="flex-1 overflow-y-auto">
                   <Setlist 
                       songs={setlist} 
-                      onSelectSong={handleSelectSong}
+                      onSelectSong={() => {}}
                       onRemoveSong={handleRemoveFromSetlist}
-                      activeSongId={activeSong?.id}
+                      activeSongId={null}
                   />
                </CardContent>
             </Card>
-          </div>
-
-          <div className="flex flex-col gap-4 overflow-hidden">
-             <Card className="h-full flex flex-col">
-               <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Music />
-                    Now Playing
-                  </CardTitle>
-                  {activeSong && <CardDescription>{activeSong.title} - {activeSong.artist}</CardDescription>}
-                </CardHeader>
-               <div className="flex-1 overflow-hidden relative">
-                  {activeSong ? (
-                    <LyricPlayer song={activeSong} key={activeSong.id}/>
-                  ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">
-                      <p>Select a song to see the lyrics.</p>
-                    </div>
-                  )}
-               </div>
-             </Card>
           </div>
         </main>
       </div>

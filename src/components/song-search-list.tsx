@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -47,20 +48,11 @@ export function SongSearchList({ songs, onAddToSetlist, onSelectSong, activeSong
                 data-active={song.id === activeSongId}
                 className="group flex items-center justify-between p-3 rounded-md hover:bg-muted/50 transition-colors data-[active=true]:bg-accent data-[active=true]:text-accent-foreground"
               >
-                <button onClick={() => onSelectSong(song)} className="text-left flex-1">
+                <div className="text-left flex-1">
                   <h3 className="font-semibold">{song.title}</h3>
                   <p className="text-sm text-muted-foreground group-data-[active=true]:text-accent-foreground/80">{song.artist}</p>
-                </button>
+                </div>
                 <div className="flex items-center gap-2">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={() => onSelectSong(song)}
-                        className="opacity-0 group-hover:opacity-100"
-                        aria-label="Play Song"
-                    >
-                        <PlayCircle className="h-5 w-5" />
-                    </Button>
                     <Button 
                         variant="ghost" 
                         size="icon" 
