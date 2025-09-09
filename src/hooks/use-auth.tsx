@@ -10,8 +10,7 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult
+  signInWithPopup,
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
@@ -19,6 +18,7 @@ import { app } from '@/lib/firebase';
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// 1. Define the context type
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -28,54 +28,43 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<any>;
 }
 
+// 2. Create the context with a default undefined value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const saveUserToFirestore = async (user: User) => {
-    if (!user) return;
-    const userRef = doc(db, 'users', user.uid);
-    const userSnap = await getDoc(userRef);
-
-    // Solo escribe los datos si el usuario no existe.
-    if (!userSnap.exists()) {
-        try {
-            await setDoc(userRef, {
-                email: user.email,
-                uid: user.uid,
-                createdAt: serverTimestamp(),
-            });
-            console.log("New user data saved to Firestore.");
-        } catch (error) {
-            console.error("Error saving new user to Firestore: ", error);
-        }
-    }
-};
-
-
+// 3. Create the provider component
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const saveUserToFirestore = async (user: User) => {
+        if (!user) return;
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+            try {
+                await setDoc(userRef, {
+                    email: user.email,
+                    uid: user.uid,
+                    createdAt: serverTimestamp(),
+                });
+                console.log("New user data saved to Firestore.");
+            } catch (error) {
+                console.error("Error saving new user to Firestore: ", error);
+            }
+        }
+    };
+      
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        await saveUserToFirestore(user);
+        setUser(user);
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
-
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          const user = result.user;
-          setUser(user);
-          saveUserToFirestore(user);
-        }
-      }).catch((error) => {
-        console.error("Error during redirect result:", {
-            code: error.code,
-            message: error.message,
-        });
-      }).finally(() => {
-        setLoading(false);
-      });
 
     return () => unsubscribe();
   }, []);
@@ -86,7 +75,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-    await saveUserToFirestore(userCredential.user);
+    const user = userCredential.user;
+    const userRef = doc(db, 'users', user.uid);
+    await setDoc(userRef, {
+        email: user.email,
+        uid: user.uid,
+        createdAt: serverTimestamp(),
+    });
     return userCredential;
   };
   
@@ -94,9 +89,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return signOut(auth);
   };
   
-  const signInWithGoogle = () => {
+  const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    return signInWithRedirect(auth, provider);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+            email: user.email,
+            uid: user.uid,
+            createdAt: serverTimestamp(),
+        });
+      }
+    } catch (error) {
+        console.error("Error signing in with Google popup:", error);
+        throw error;
+    }
   };
 
   const value = {
@@ -111,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 }
 
+// 4. Create the custom hook
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
