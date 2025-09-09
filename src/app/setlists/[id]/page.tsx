@@ -57,23 +57,36 @@ export default function SetlistDetailPage() {
     setError(null);
 
     if (isLocal) {
-        setError("Este setlist es local y no se puede editar. Por favor, vuelve y crea uno nuevo que se guarde en la nube.");
-        setIsLoading(false);
-        return;
+        const localSetlists = JSON.parse(localStorage.getItem('setlists') || '[]');
+        const currentSetlist = localSetlists.find((s: Setlist) => s.id === setlistId);
+        if (currentSetlist) {
+            // Las fechas de JSON necesitan ser convertidas de nuevo a objetos Date
+            currentSetlist.date = new Timestamp(currentSetlist.date.seconds, currentSetlist.date.nanoseconds);
+            setSetlist(currentSetlist);
+        } else {
+             setError("Este setlist local no se ha encontrado. Puede que se haya perdido al recargar.");
+             setIsLoading(false);
+             return;
+        }
     }
 
     try {
-      const docRef = doc(db, 'setlist', setlistId);
-      const docSnap = await getDoc(docRef);
-
       let currentSetlist: Setlist | null = null;
-      if (docSnap.exists() && docSnap.data().userId === user.uid) {
-        currentSetlist = { id: docSnap.id, ...docSnap.data() } as Setlist;
-        setSetlist(currentSetlist);
+      if (!isLocal) {
+        const docRef = doc(db, 'setlist', setlistId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists() && docSnap.data().userId === user.uid) {
+            currentSetlist = { id: docSnap.id, ...docSnap.data() } as Setlist;
+            setSetlist(currentSetlist);
+        } else {
+            setError('Setlist no encontrado o no tienes permiso para verlo.');
+            setIsLoading(false);
+            return;
+        }
       } else {
-        setError('Setlist no encontrado o no tienes permiso para verlo.');
-        setIsLoading(false);
-        return;
+        // Para setlists locales, ya lo hemos cargado arriba
+        currentSetlist = setlist;
       }
 
       const songsQuery = query(
@@ -103,7 +116,7 @@ export default function SetlistDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, setlistId, isLocal]);
+  }, [user, setlistId, isLocal, setlist]);
   
   useEffect(() => {
     fetchSetlistAndSongs();
@@ -166,8 +179,20 @@ export default function SetlistDetailPage() {
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen"><p>Cargando detalles del setlist...</p></div>;
   }
+  
+  if (error && !setlist) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+         <Alert variant="destructive" className="mb-8 max-w-md mx-auto">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <Button onClick={() => router.push('/setlists')} className="mt-4">Volver</Button>
+      </div>
+    );
+  }
 
-  if (!setlist && !error) {
+  if (!setlist) {
     return <div className="container mx-auto p-4 text-center"><p>No se encontró el setlist.</p><Button onClick={() => router.push('/setlists')} className="mt-4">Volver</Button></div>;
   }
 
