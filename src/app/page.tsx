@@ -18,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Input } from '@/components/ui/input'; // Importar Input
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 
@@ -34,6 +35,7 @@ export default function DashboardPage() {
 
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoadingSongs, setIsLoadingSongs] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(''); // Estado para el buscador
 
   // Función para obtener las canciones
   const fetchSongs = useCallback(async () => {
@@ -69,6 +71,12 @@ export default function DashboardPage() {
       </div>
     );
   }
+  
+  // Filtrar canciones basado en el término de búsqueda
+  const filteredSongs = songs.filter(song =>
+    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <main className="container mx-auto p-4">
@@ -86,11 +94,17 @@ export default function DashboardPage() {
             <CardDescription>
               Repertorio central de canciones disponibles.
             </CardDescription>
+             <Input
+                placeholder="Buscar por título o artista..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mt-2"
+              />
           </CardHeader>
           <CardContent className="flex-grow">
             {isLoadingSongs ? (
               <p>Cargando canciones...</p>
-            ) : songs.length > 0 ? (
+            ) : filteredSongs.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
                 <Table>
                   <TableHeader>
@@ -100,7 +114,7 @@ export default function DashboardPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {songs.map((song) => (
+                    {filteredSongs.map((song) => (
                       <TableRow key={song.id}>
                         <TableCell className="font-medium">
                           {song.title}
@@ -112,7 +126,9 @@ export default function DashboardPage() {
                 </Table>
               </div>
             ) : (
-              <p>No hay canciones en la biblioteca.</p>
+               <p className="text-muted-foreground text-center py-4">
+                {songs.length > 0 ? 'No se encontraron canciones.' : 'No hay canciones en la biblioteca.'}
+              </p>
             )}
           </CardContent>
         </Card>
