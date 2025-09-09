@@ -2,15 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  Timestamp,
-  orderBy,
-} from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, Timestamp } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -57,11 +49,8 @@ export default function SetlistsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const q = query(
-        collection(db, 'setlist'),
-        where('userId', '==', user.uid),
-        orderBy('name', 'asc')
-      );
+      // Querying 'setlist' collection
+      const q = query(collection(db, 'setlist'), where('userId', '==', user.uid));
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Setlist)
@@ -69,9 +58,7 @@ export default function SetlistsPage() {
       setSetlists(setlistsData);
     } catch (e: any) {
       console.error('Error fetching documents: ', e);
-      if (e.code === 'failed-precondition') {
-        setError('Error de índice. Revisa la consola para crear el índice de Firestore necesario.');
-      } else if (e.code === 'permission-denied') {
+       if (e.code === 'permission-denied') {
         setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
       } else {
         setError(`No se pudieron cargar los setlists: ${e.message}`);
@@ -87,10 +74,8 @@ export default function SetlistsPage() {
     }
   }, [user, fetchSetlists]);
 
-  const handleCreateSetlist = async (e: React.FormEvent) => {
+ const handleCreateSetlist = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    
     if (!user) {
       setError('Debes estar autenticado para crear un setlist.');
       return;
@@ -99,18 +84,20 @@ export default function SetlistsPage() {
       setError('El nombre y la fecha son obligatorios.');
       return;
     }
-    
     setIsLoading(true);
+    setError(null);
 
+    // Using a plain object with a string for the date, which is known to work
     const newSetlistData = {
       name: name,
-      date: date.toISOString(), // Convertir la fecha a un string plano
+      date: date.toISOString(), // Simplified to ISO string
       userId: user.uid,
     };
-
+    
     console.log('Intentando guardar este objeto en Firestore:', newSetlistData);
 
     try {
+      // Adding to 'setlist' collection
       await addDoc(collection(db, 'setlist'), newSetlistData);
       setName('');
       setDate(undefined);
