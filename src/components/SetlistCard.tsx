@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/comp
 import { Button } from "@/components/ui/button";
 import type { Setlist } from "@/app/setlists/page";
 import { format } from "date-fns";
+import Link from "next/link";
 
 interface SetlistCardProps {
     setlist: Setlist;
@@ -20,7 +21,9 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
                 <CardDescription>{format(date, 'PPP')}</CardDescription>
             </CardHeader>
             <CardFooter>
-                 <Button variant="outline" size="sm">Ver Detalles</Button>
+                <Link href={`/setlists/${setlist.id}`}>
+                    <Button variant="outline" size="sm">Ver Detalles</Button>
+                </Link>
             </CardFooter>
         </Card>
     );
