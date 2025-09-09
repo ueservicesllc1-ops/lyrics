@@ -42,10 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const saveUserToFirestore = async (user: User) => {
+    // We don't save anonymous users to the 'users' collection
     if (user.isAnonymous) return;
+    
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
+    // Only create a new document if one doesn't already exist.
     if (!userSnap.exists()) {
       try {
         await setDoc(userRef, {
@@ -61,60 +64,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
     
   useEffect(() => {
-    // This ensures we always have an anonymous session for database operations.
-    // This runs in parallel to the user login state.
-    const ensureAnonymousSession = async () => {
-      if (!auth.currentUser) {
-        try {
-            await signInAnonymously(auth);
-            console.log("Anonymous session established for DB operations.");
-        } catch (error) {
-            console.error("Anonymous sign-in failed:", error);
-        }
-      }
-    };
-    ensureAnonymousSession();
-
-    // This listener is only for UI purposes, to know who is logged in.
+    // This listener is for UI purposes, to know who is logged in for admin access.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      // We set the user state for anyone who is not anonymous.
       if (currentUser && !currentUser.isAnonymous) {
         setUser(currentUser);
       } else {
-        setUser(null);
+        setUser(null); // No admin user is signed in.
       }
       setLoading(false);
     });
+
+    // In parallel, we ensure there is always a session for DB ops.
+    // If no one is signed in (not admin, not anon), we sign in anonymously.
+    if (!auth.currentUser) {
+        signInAnonymously(auth).catch(error => {
+            console.error("Persistent anonymous sign-in failed on initial load:", error);
+        });
+    }
 
     return () => unsubscribe();
   }, []);
 
 
   const signIn = async (email: string, pass: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-    if (!userCredential.user.isAnonymous) {
-      setUser(userCredential.user);
-    }
-    return userCredential;
+    return signInWithEmailAndPassword(auth, email, pass);
   };
   
   const signUp = async (email: string, pass: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
     await saveUserToFirestore(userCredential.user);
-    if (!userCredential.user.isAnonymous) {
-      setUser(userCredential.user);
-    }
     return userCredential;
   };
   
   const signOutUser = () => {
-    const originalUser = auth.currentUser;
+    // When the admin signs out, we ensure the anonymous session is re-established
+    // for subsequent database operations if needed.
     return signOut(auth).then(() => {
       setUser(null);
-      // If the user signing out was not anonymous, we must re-establish
-      // the anonymous session for database operations.
-      if (originalUser && !originalUser.isAnonymous) {
-        return signInAnonymously(auth);
-      }
+      return signInAnonymously(auth).catch(error => {
+          console.error("Anonymous sign-in failed after sign out:", error);
+      });
     });
   };
   
@@ -123,9 +113,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const result = await signInWithPopup(auth, provider);
       await saveUserToFirestore(result.user);
-      if (!result.user.isAnonymous) {
-        setUser(result.user);
-      }
       return result;
     } catch (error) {
        console.error("Error during Google sign-in:", error);

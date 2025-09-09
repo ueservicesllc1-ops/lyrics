@@ -49,11 +49,14 @@ export default function UploadLyricsPage() {
     if (user?.uid) {
         formData.append('userId', user.uid);
     } else {
-        setState({ message: "Error: Usuario no autenticado. No se puede guardar la canción.", errors: {} });
-        return;
+        // This case should ideally not be hit if an admin is logged in, but as a fallback:
+        // We allow anonymous submission, but we won't be able to track the user.
+        // This relies on Firestore rules allowing any authenticated (including anonymous) write.
+        formData.append('userId', 'anonymous');
     }
 
     startTransition(async () => {
+      // We pass the previous state, even though we reset it, for consistency with the hook's signature
       const result = await saveSong(initialState, formData);
       setState(result);
 
