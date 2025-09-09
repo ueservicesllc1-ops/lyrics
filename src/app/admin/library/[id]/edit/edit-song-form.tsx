@@ -1,12 +1,11 @@
 
 "use client";
 
-import { useActionState } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { type Song } from '@/lib/songs';
-import { updateSong } from '@/lib/actions/song-actions';
+import { updateSongClient } from '@/lib/actions/song-actions'; // We will create this
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { z } from 'zod';
+
+
+const formSchema = z.object({
+  title: z.string().min(1, 'El título es obligatorio.'),
+  artist: z.string().min(1, 'El artista es obligatorio.'),
+  lyrics: z.string().min(1, 'La letra es obligatoria.'),
+});
 
 type State = {
     message: string | null;
@@ -25,46 +32,59 @@ const initialState: State = {
   errors: {},
 };
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Actualizando...
-        </>
-      ) : (
-        'Actualizar Canción'
-      )}
-    </Button>
-  );
-}
 
 export function EditSongForm({ song }: { song: Song }) {
   const { toast } = useToast();
   const router = useRouter();
-  const updateSongWithId = updateSong.bind(null, song.id);
-  const [state, dispatch] = useActionState(updateSongWithId, initialState);
+  const [isPending, startTransition] = useTransition();
+  const [state, setState] = useState<State>(initialState);
+  
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    
+    setState(initialState); // Reset state
+
+    const validatedFields = formSchema.safeParse({
+        title: formData.get('title'),
+        artist: formData.get('artist'),
+        lyrics: formData.get('lyrics'),
+    });
+
+    if (!validatedFields.success) {
+        setState({
+            message: 'Por favor, corrige los errores del formulario.',
+            errors: validatedFields.error.flatten().fieldErrors,
+        });
+        return;
+    }
+    
+    startTransition(async () => {
+        const result = await updateSongClient(song.id, validatedFields.data);
+        setState(result);
+        if (result.message === 'success') {
+            toast({
+                title: "¡Éxito!",
+                description: "La canción ha sido actualizada correctamente."
+            });
+            router.push('/admin/library');
+        }
+    });
+  }
   
   useEffect(() => {
-    if(state.message && state.message !== 'success') {
+    // This effect is now just for showing non-success toast messages
+    if (state.message && state.message !== 'success') {
       toast({
         variant: 'destructive',
         title: 'Error al Actualizar',
         description: state.message,
       });
-    } else if (state.message === 'success') {
-        toast({
-            title: "¡Éxito!",
-            description: "La canción ha sido actualizada correctamente."
-        });
-        // The redirect is now handled in the server action
     }
-  }, [state, toast, router]);
+  }, [state, toast]);
 
   return (
-    <form action={dispatch} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="title">Nombre de la Canción</Label>
         <Input id="title" name="title" defaultValue={song.title} required />
@@ -89,7 +109,16 @@ export function EditSongForm({ song }: { song: Song }) {
         {state.errors?.lyrics && <p className="text-destructive text-sm">{state.errors.lyrics[0]}</p>}
       </div>
 
-      <SubmitButton />
+      <Button type="submit" disabled={isPending}>
+        {isPending ? (
+            <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Actualizando...
+            </>
+        ) : (
+            'Actualizar Canción'
+        )}
+        </Button>
 
       {state.message && state.message !== 'success' && (
         <Alert variant="destructive" className="mt-4">

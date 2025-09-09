@@ -98,25 +98,13 @@ export async function deleteSong(songId: string): Promise<{ message: string | nu
   }
 }
 
-export async function updateSong(id: string, prevState: State, formData: FormData): Promise<State> {
+// THIS IS A NEW CLIENT-SIDE ACTION
+export async function updateSongClient(id: string, data: z.infer<typeof formSchema>): Promise<State> {
     if (!id) {
         return { message: 'ID de canción no válido.', errors: {} };
     }
     
-    const validatedFields = formSchema.safeParse({
-        title: formData.get('title'),
-        artist: formData.get('artist'),
-        lyrics: formData.get('lyrics'),
-    });
-
-    if (!validatedFields.success) {
-        return {
-            message: 'Por favor, corrige los errores del formulario.',
-            errors: validatedFields.error.flatten().fieldErrors,
-        };
-    }
-
-    const { title, artist, lyrics } = validatedFields.data;
+    const { title, artist, lyrics } = data;
     const slug = slugify(title);
 
     try {
@@ -127,15 +115,28 @@ export async function updateSong(id: string, prevState: State, formData: FormDat
             lyrics,
             slug,
         });
+        
+        // We still call revalidatePath from a server action, so we can keep this pattern
+        // but the actual DB operation is on the client.
+        // For simplicity, we will just revalidate on the client via router.push
+        // and let Next.js handle data refetching.
+        revalidatePath(`/admin/library`);
+        revalidatePath(`/admin/library/${id}/edit`);
+        revalidatePath('/');
+        
+        return { message: 'success' };
 
     } catch (e: unknown) {
         const error = e as Error;
         console.error('Error updating document: ', error);
         return { message: `Error de base de datos: ${error.message}`, errors: {} };
     }
-    
-    revalidatePath(`/admin/library`);
-    revalidatePath(`/admin/library/${id}/edit`);
-    revalidatePath('/');
-    redirect(`/admin/library`);
+}
+
+
+export async function updateSong(id: string, prevState: State, formData: FormData): Promise<State> {
+    // This server action is no longer used for updating, but we keep it to avoid breaking imports.
+    // The new logic is in updateSongClient and handled in edit-song-form.tsx
+    console.log("updateSong (server action) is deprecated. Use client-side update.");
+    return { message: "This function is deprecated.", errors: {} };
 }
