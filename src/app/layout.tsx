@@ -22,9 +22,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased bg-background text-card-foreground">
         <AuthProvider>
-          <div className="p-4 md:p-8">
-            {children}
-          </div>
+          {children}
           <Toaster />
         </AuthProvider>
       </body>

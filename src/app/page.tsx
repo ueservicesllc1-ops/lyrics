@@ -53,86 +53,88 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] bg-transparent text-foreground font-sans gap-4">
-      <Header />
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
-        <Card className="h-full flex flex-col">
-          <Tabs defaultValue="search" className="h-full flex flex-col">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BookOpen/>
-                Song Library
-              </CardTitle>
-              <CardDescription>
-                Find songs or get AI suggestions.
-              </CardDescription>
-              <TabsList className="grid w-full grid-cols-2 mt-2">
-                <TabsTrigger value="search">Search</TabsTrigger>
-                <TabsTrigger value="ai">AI Suggester</TabsTrigger>
-              </TabsList>
-            </CardHeader>
-            <TabsContent value="search" className="flex-1 overflow-hidden">
-              <SongSearchList 
-                songs={songs} 
-                onAddToSetlist={handleAddToSetlist}
-                onSelectSong={handleSelectSong}
-                activeSongId={activeSong?.id}
-              />
-            </TabsContent>
-            <TabsContent value="ai" className="flex-1 overflow-y-auto">
-               <CardContent>
-                <AiSongSuggester onSelectSong={(songTitle) => {
-                  const song = songs.find(s => s.title === songTitle);
-                  if (song) {
-                    handleAddToSetlist(song);
-                  }
-                }}/>
-               </CardContent>
-            </TabsContent>
-          </Tabs>
-        </Card>
-
-        <div className="flex flex-col gap-4 overflow-hidden">
+    <div className="p-4 md:p-8">
+      <div className="flex flex-col h-[calc(100vh-4rem)] bg-transparent text-foreground font-sans gap-4">
+        <Header />
+        <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
           <Card className="h-full flex flex-col">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ListMusic />
-                Current Setlist
-              </CardTitle>
-              <CardDescription>Your list of songs for the event.</CardDescription>
-            </CardHeader>
-             <CardContent className="flex-1 overflow-y-auto">
-                <Setlist 
-                    songs={setlist} 
-                    onSelectSong={handleSelectSong}
-                    onRemoveSong={handleRemoveFromSetlist}
-                    activeSongId={activeSong?.id}
-                />
-             </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex flex-col gap-4 overflow-hidden">
-           <Card className="h-full flex flex-col">
-             <CardHeader>
+            <Tabs defaultValue="search" className="h-full flex flex-col">
+              <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Music />
-                  Now Playing
+                  <BookOpen/>
+                  Song Library
                 </CardTitle>
-                {activeSong && <CardDescription>{activeSong.title} - {activeSong.artist}</CardDescription>}
+                <CardDescription>
+                  Find songs or get AI suggestions.
+                </CardDescription>
+                <TabsList className="grid w-full grid-cols-2 mt-2">
+                  <TabsTrigger value="search">Search</TabsTrigger>
+                  <TabsTrigger value="ai">AI Suggester</TabsTrigger>
+                </TabsList>
               </CardHeader>
-             <div className="flex-1 overflow-hidden relative">
-                {activeSong ? (
-                  <LyricPlayer song={activeSong} key={activeSong.id}/>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-muted-foreground">
-                    <p>Select a song to see the lyrics.</p>
-                  </div>
-                )}
-             </div>
-           </Card>
-        </div>
-      </main>
+              <TabsContent value="search" className="flex-1 overflow-hidden">
+                <SongSearchList 
+                  songs={songs} 
+                  onAddToSetlist={handleAddToSetlist}
+                  onSelectSong={handleSelectSong}
+                  activeSongId={activeSong?.id}
+                />
+              </TabsContent>
+              <TabsContent value="ai" className="flex-1 overflow-y-auto">
+                 <CardContent>
+                  <AiSongSuggester onSelectSong={(songTitle) => {
+                    const song = songs.find(s => s.title === songTitle);
+                    if (song) {
+                      handleAddToSetlist(song);
+                    }
+                  }}/>
+                 </CardContent>
+              </TabsContent>
+            </Tabs>
+          </Card>
+
+          <div className="flex flex-col gap-4 overflow-hidden">
+            <Card className="h-full flex flex-col">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ListMusic />
+                  Current Setlist
+                </CardTitle>
+                <CardDescription>Your list of songs for the event.</CardDescription>
+              </CardHeader>
+               <CardContent className="flex-1 overflow-y-auto">
+                  <Setlist 
+                      songs={setlist} 
+                      onSelectSong={handleSelectSong}
+                      onRemoveSong={handleRemoveFromSetlist}
+                      activeSongId={activeSong?.id}
+                  />
+               </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex flex-col gap-4 overflow-hidden">
+             <Card className="h-full flex flex-col">
+               <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Music />
+                    Now Playing
+                  </CardTitle>
+                  {activeSong && <CardDescription>{activeSong.title} - {activeSong.artist}</CardDescription>}
+                </CardHeader>
+               <div className="flex-1 overflow-hidden relative">
+                  {activeSong ? (
+                    <LyricPlayer song={activeSong} key={activeSong.id}/>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                      <p>Select a song to see the lyrics.</p>
+                    </div>
+                  )}
+               </div>
+             </Card>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
