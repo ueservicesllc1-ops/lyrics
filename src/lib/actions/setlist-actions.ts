@@ -1,6 +1,6 @@
 
 import { z } from 'zod';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 // No longer a server action, so we remove 'use server' and revalidatePath
 
@@ -38,7 +38,7 @@ export async function saveSetlist(input: SaveSetlistInput): Promise<{ success: b
 
     await addDoc(setlistsCollection, {
       name,
-      serviceDate,
+      serviceDate: Timestamp.fromDate(serviceDate),
       songIds,
       userId,
       createdAt: serverTimestamp(),
