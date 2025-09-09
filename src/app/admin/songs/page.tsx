@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import {
   collection,
@@ -40,7 +41,7 @@ interface Song {
   userId: string;
 }
 
-const ADMIN_UID = 'AQUI_VA_EL_UID_DEL_ADMIN'; // UID para 'ueservicesllc1@gmail.com'
+const ADMIN_EMAIL = 'ueservicesllc1@gmail.com'; 
 
 export default function SongsPage() {
   const [songs, setSongs] = useState<Song[]>([]);
@@ -54,25 +55,27 @@ export default function SongsPage() {
   const [artist, setArtist] = useState('');
   const [lyrics, setLyrics] = useState('');
   
-  const isAdmin = user?.email === 'ueservicesllc1@gmail.com';
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const fetchSongs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Por ahora, para obtener el UID del admin, necesitaremos que inicie sesión y obtenerlo.
-      // Una vez obtenido, lo podemos hardcodear.
-      // Temporalmente, mostraremos todas las canciones de todos para verificar.
-      // La consulta correcta sería: where('userId', '==', ADMIN_UID)
+      // Muestra todas las canciones del administrador.
       const q = query(
         collection(db, 'songs'),
+        // where('userId', '==', 'UID_DEL_ADMIN'), // Necesitamos el UID estático del admin
         orderBy('title', 'asc')
       );
       const querySnapshot = await getDocs(q);
       const songsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Song)
       );
-      setSongs(songsData);
+      // Filtramos en el cliente, ya que la consulta where por email no es posible directamente
+      // si no guardamos el email en el documento. Idealmente, obtendríamos el UID del admin
+      // y lo usaríamos en la consulta.
+      const adminSongs = songsData.filter(song => song.userId === 'AQUI_VA_EL_UID_DEL_ADMIN');
+      setSongs(songsData); // Temporalmente mostramos todas
     } catch (e: any) {
       console.error('Error fetching documents: ', e);
       if (e.code === 'failed-precondition') {
@@ -111,7 +114,7 @@ export default function SongsPage() {
         title,
         artist,
         lyrics,
-        userId: user.uid, // Guardamos el UID del admin
+        userId: user.uid, 
       });
       setTitle('');
       setArtist('');
