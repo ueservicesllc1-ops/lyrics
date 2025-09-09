@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, AlertTriangle, PlusCircle } from 'lucide-react';
+import { CalendarIcon, AlertTriangle, PlusCircle, Rocket } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import SetlistCard from '@/components/SetlistCard';
@@ -226,7 +226,7 @@ export default function SetlistsPage() {
           <CardHeader>
             <CardTitle>Próximos Eventos</CardTitle>
             <CardDescription>
-              Aquí aparecerán tus setlists guardados.
+              Aquí aparecerán tus setlists guardados. Haz clic en 'Ver Detalles' para añadir canciones y lanzar el teleprompter.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -249,6 +249,12 @@ export default function SetlistsPage() {
           </CardContent>
         </Card>
       </div>
+       <div className="mt-8 text-center">
+            <Button size="lg" disabled>
+                <Rocket className="mr-2 h-5 w-5" />
+                Elige un setlist para iniciar la presentación
+            </Button>
+        </div>
     </main>
   );
 }

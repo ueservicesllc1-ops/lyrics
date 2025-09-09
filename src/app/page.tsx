@@ -198,15 +198,6 @@ export default function DashboardPage() {
           </CardFooter>
         </Card>
       </div>
-
-       <div className="mt-8">
-        <Link href="/setlists" passHref>
-          <Button size="lg" className="w-full">
-            <Rocket className="mr-2 h-5 w-5" />
-            Iniciar Presentación
-          </Button>
-        </Link>
-      </div>
     </main>
   );
 }
