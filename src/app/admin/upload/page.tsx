@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/header';
@@ -43,7 +43,7 @@ export default function UploadLyricsPage() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   
-  const [state, formAction] = useFormState(saveSong, initialState);
+  const [state, formAction] = useActionState(saveSong, initialState);
 
   useEffect(() => {
     if (!loading && (user?.email !== 'ueservicesllc1@gmail.com')) {
