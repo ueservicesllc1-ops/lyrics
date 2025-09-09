@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Setlist } from '@/app/setlists/page';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 import {
   Tooltip,
@@ -23,7 +23,11 @@ interface SetlistCardProps {
 }
 
 export default function SetlistCard({ setlist }: SetlistCardProps) {
-  const date = setlist.date.toDate();
+  // Firestore puede devolver Timestamp o un string si lo guardamos así.
+  const date = typeof setlist.date === 'string' 
+    ? parseISO(setlist.date) 
+    : setlist.date.toDate();
+    
   const isLocal = setlist.id.startsWith('local-');
 
   return (

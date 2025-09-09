@@ -19,7 +19,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, PlusCircle, MinusCircle, Clapperboard, AlertTriangle } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import type { Setlist } from '../page';
 import {
   Tooltip,
@@ -56,37 +56,22 @@ export default function SetlistDetailPage() {
     setIsLoading(true);
     setError(null);
 
-    if (isLocal) {
-        const localSetlists = JSON.parse(localStorage.getItem('setlists') || '[]');
-        const currentSetlist = localSetlists.find((s: Setlist) => s.id === setlistId);
-        if (currentSetlist) {
-            // Las fechas de JSON necesitan ser convertidas de nuevo a objetos Date
-            currentSetlist.date = new Timestamp(currentSetlist.date.seconds, currentSetlist.date.nanoseconds);
-            setSetlist(currentSetlist);
-        } else {
-             setError("Este setlist local no se ha encontrado. Puede que se haya perdido al recargar.");
-             setIsLoading(false);
-             return;
-        }
-    }
-
     try {
-      let currentSetlist: Setlist | null = null;
-      if (!isLocal) {
-        const docRef = doc(db, 'setlist', setlistId);
-        const docSnap = await getDoc(docRef);
+      const docRef = doc(db, 'setlist', setlistId);
+      const docSnap = await getDoc(docRef);
 
-        if (docSnap.exists() && docSnap.data().userId === user.uid) {
-            currentSetlist = { id: docSnap.id, ...docSnap.data() } as Setlist;
-            setSetlist(currentSetlist);
-        } else {
-            setError('Setlist no encontrado o no tienes permiso para verlo.');
-            setIsLoading(false);
-            return;
-        }
+      let currentSetlist: Setlist | null = null;
+      if (docSnap.exists() && docSnap.data().userId === user.uid) {
+          currentSetlist = { id: docSnap.id, ...docSnap.data() } as Setlist;
+          // El campo 'songs' puede no existir en la creación inicial
+          if (!currentSetlist.songs) {
+            currentSetlist.songs = [];
+          }
+          setSetlist(currentSetlist);
       } else {
-        // Para setlists locales, ya lo hemos cargado arriba
-        currentSetlist = setlist;
+          setError('Setlist no encontrado o no tienes permiso para verlo.');
+          setIsLoading(false);
+          return;
       }
 
       const songsQuery = query(
@@ -116,7 +101,7 @@ export default function SetlistDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, setlistId, isLocal, setlist]);
+  }, [user, setlistId]);
   
   useEffect(() => {
     fetchSetlistAndSongs();
@@ -175,6 +160,14 @@ export default function SetlistDetailPage() {
     }
   };
 
+  const getSetlistDate = () => {
+      if (!setlist) return null;
+      // Firestore puede devolver Timestamp o un string si lo guardamos así.
+      return typeof setlist.date === 'string' 
+        ? parseISO(setlist.date as any) 
+        : (setlist.date as Timestamp).toDate();
+  }
+
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen"><p>Cargando detalles del setlist...</p></div>;
@@ -223,7 +216,7 @@ export default function SetlistDetailPage() {
                             </Tooltip>
                         </TooltipProvider>
                     </div>
-                    <p className="text-muted-foreground">{format(setlist.date.toDate(), 'PPP')}</p>
+                    <p className="text-muted-foreground">{format(getSetlistDate()!, 'PPP')}</p>
                 </div>
             )}
             <div className="flex gap-2">
@@ -266,7 +259,7 @@ export default function SetlistDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle>Canciones en este Setlist</CardTitle>
-          </CardHeader>
+          </Header>
           <CardContent className="space-y-2 max-h-[60vh] overflow-y-auto">
              {setlistSongs.length > 0 ? setlistSongs.map(song => (
               <div key={song.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary">

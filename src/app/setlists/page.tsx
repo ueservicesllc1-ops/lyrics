@@ -89,6 +89,8 @@ export default function SetlistsPage() {
 
   const handleCreateSetlist = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
     if (!user) {
       setError('Debes estar autenticado para crear un setlist.');
       return;
@@ -97,16 +99,19 @@ export default function SetlistsPage() {
       setError('El nombre y la fecha son obligatorios.');
       return;
     }
-    setError(null);
+    
     setIsLoading(true);
 
+    const newSetlistData = {
+      name: name,
+      date: date.toISOString(), // Convertir la fecha a un string plano
+      userId: user.uid,
+    };
+
+    console.log('Intentando guardar este objeto en Firestore:', newSetlistData);
+
     try {
-      await addDoc(collection(db, 'setlist'), {
-        name: name,
-        date: date,
-        userId: user.uid,
-        songs: []
-      });
+      await addDoc(collection(db, 'setlist'), newSetlistData);
       setName('');
       setDate(undefined);
       await fetchSetlists(); // Refresh list
