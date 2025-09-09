@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Logo } from "@/components/icons";
@@ -31,9 +30,11 @@ export function Header() {
         {user && (
           <div className="flex items-center gap-4">
             {isAdmin && (
-               <Button variant="ghost" size="sm">
-                <Shield className="mr-2 h-4 w-4" />
-                Admin
+               <Button variant="ghost" size="sm" asChild>
+                <Link href="/admin">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin
+                </Link>
               </Button>
             )}
             <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
