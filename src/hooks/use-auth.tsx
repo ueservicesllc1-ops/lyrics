@@ -10,7 +10,8 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   UserCredential
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -39,6 +40,7 @@ const saveUserToFirestore = async (user: User) => {
       uid: user.uid,
       createdAt: serverTimestamp(),
     }, { merge: true });
+    console.log("User saved to firestore");
   } catch (error) {
     console.error("Error saving user to Firestore: ", error);
   }
@@ -54,6 +56,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(user);
       setLoading(false);
     });
+
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          // This is the signed-in user
+          const user = result.user;
+          saveUserToFirestore(user).catch(err => console.error("Failed to save user from redirect", err));
+        }
+      }).catch((error) => {
+        console.error("Error getting redirect result:", error);
+      }).finally(() => {
+        setLoading(false);
+      });
+
     return () => unsubscribe();
   }, []);
 
@@ -73,9 +89,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    await saveUserToFirestore(result.user);
-    return result;
+    // Use signInWithRedirect instead of signInWithPopup
+    return signInWithRedirect(auth, provider);
   };
 
   const value = {
@@ -87,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
