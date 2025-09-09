@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, Upload, Bell } from 'lucide-react';
+import { Users, Upload, Bell, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
@@ -34,20 +34,26 @@ export default function AdminPage() {
             <CardDescription>Selecciona una opción para gestionar la aplicación.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col md:flex-row gap-4">
-              <Button variant="outline" className="flex-1 justify-start p-6 text-lg" asChild>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Button variant="outline" className="justify-start p-6 text-lg" asChild>
                 <Link href="/admin/users">
                     <Users className="mr-4 h-6 w-6" />
                     Administrador de Usuarios
                 </Link>
               </Button>
-              <Button variant="outline" className="flex-1 justify-start p-6 text-lg" asChild>
+              <Button variant="outline" className="justify-start p-6 text-lg" asChild>
                 <Link href="/admin/upload">
                   <Upload className="mr-4 h-6 w-6" />
                   Subir Letras
                 </Link>
               </Button>
-              <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
+               <Button variant="outline" className="justify-start p-6 text-lg" asChild>
+                <Link href="/admin/library">
+                  <BookOpen className="mr-4 h-6 w-6" />
+                  Ver Biblioteca
+                </Link>
+              </Button>
+              <Button variant="outline" className="justify-start p-6 text-lg">
                 <Bell className="mr-4 h-6 w-6" />
                 Notificaciones
               </Button>
