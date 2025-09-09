@@ -2,7 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+} from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,7 +53,11 @@ export default function SongsPage() {
     if (!user) return;
     setIsLoading(true);
     try {
-      const q = query(collection(db, 'songs'), where('userId', '==', user.uid));
+      const q = query(
+        collection(db, 'songs'),
+        where('userId', '==', user.uid),
+        orderBy('title', 'asc')
+      );
       const querySnapshot = await getDocs(q);
       const songsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Song)
@@ -99,7 +110,7 @@ export default function SongsPage() {
 
   return (
     <main className="container mx-auto p-4">
-       <header className="mb-8 flex items-center justify-between">
+      <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold">Mis Canciones</h1>
           <p className="text-muted-foreground">
@@ -150,44 +161,44 @@ export default function SongsPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter className='flex-col items-start'>
-               {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            <CardFooter className="flex-col items-start">
+              {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? 'Guardando...' : 'Guardar Canción'}
               </Button>
             </CardFooter>
           </form>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Setlist</CardTitle>
-             <CardDescription>
+            <CardDescription>
               Esta es tu lista de canciones guardadas.
             </CardDescription>
           </CardHeader>
           <CardContent>
-             {isLoading && songs.length === 0 ? (
+            {isLoading && songs.length === 0 ? (
               <p>Cargando canciones...</p>
             ) : songs.length === 0 ? (
               <p>Aún no has añadido ninguna canción.</p>
             ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Artista</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {songs.map((song) => (
-                  <TableRow key={song.id}>
-                    <TableCell className="font-medium">{song.title}</TableCell>
-                    <TableCell>{song.artist || 'N/A'}</TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Título</TableHead>
+                    <TableHead>Artista</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {songs.map((song) => (
+                    <TableRow key={song.id}>
+                      <TableCell className="font-medium">{song.title}</TableCell>
+                      <TableCell>{song.artist || 'N/A'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             )}
           </CardContent>
         </Card>

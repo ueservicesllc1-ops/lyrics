@@ -95,6 +95,7 @@ export default function SetlistsPage() {
         name,
         date: Timestamp.fromDate(date),
         userId: user.uid,
+        songs: [],
       });
       setName('');
       setDate(undefined);
