@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from '@/hooks/use-auth';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -20,10 +21,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-sans antialiased bg-background text-card-foreground">
-        <div className="p-4 md:p-8">
-          {children}
-        </div>
-        <Toaster />
+        <AuthProvider>
+          <div className="p-4 md:p-8">
+            {children}
+          </div>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );
