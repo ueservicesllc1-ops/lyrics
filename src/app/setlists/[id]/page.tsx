@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, where, query } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -11,12 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 // Interfaces
 interface Song {
@@ -24,7 +18,6 @@ interface Song {
   title: string;
   artist: string;
   lyrics: string;
-  userId: string;
 }
 
 interface Setlist {
@@ -56,19 +49,19 @@ export default function SetlistDetailPage() {
     setError(null);
 
     try {
-      // Fetch the specific setlist document from 'setlists' (plural)
+      // Fetch the specific setlist document
       const setlistDocRef = doc(db, 'setlists', setlistId);
       const setlistDoc = await getDoc(setlistDocRef);
 
-      if (!setlistDoc.exists()) {
-        throw new Error('El setlist no fue encontrado.');
+      if (!setlistDoc.exists() || setlistDoc.data().userId !== user.uid) {
+        throw new Error('El setlist no fue encontrado o no tienes permiso para verlo.');
       }
       
       const setlistData = { id: setlistDoc.id, ...setlistDoc.data() } as Setlist;
       setSetlist(setlistData);
 
-      // Fetch all available songs for the user
-      const songsQuery = query(collection(db, 'songs'), where('userId', '==', user.uid));
+      // Fetch all available songs from the general library
+      const songsQuery = query(collection(db, 'songs'), orderBy('title', 'asc'));
       const songsSnapshot = await getDocs(songsQuery);
       const allSongsData = songsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Song));
       
@@ -76,7 +69,12 @@ export default function SetlistDetailPage() {
 
       // Filter songs that are in the current setlist
       if (setlistData.songs && setlistData.songs.length > 0) {
-        const songsIn = allSongsData.filter(song => setlistData.songs.includes(song.id));
+        // We need to fetch the full song details for the IDs in the setlist
+        const songDetailsPromises = setlistData.songs.map(songId => getDoc(doc(db, 'songs', songId)));
+        const songDetailsDocs = await Promise.all(songDetailsPromises);
+        const songsIn = songDetailsDocs
+            .filter(doc => doc.exists())
+            .map(doc => ({ id: doc.id, ...doc.data() } as Song));
         setSongsInSetlist(songsIn);
       } else {
         setSongsInSetlist([]);
@@ -163,16 +161,6 @@ export default function SetlistDetailPage() {
       <header className="mb-8">
          <div className="flex items-center gap-4 mb-2">
           <h1 className="text-4xl font-bold">{setlist.name}</h1>
-           <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <div className="h-3 w-3 rounded-full bg-green-500" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Setlist guardado en Firestore.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
         <p className="text-muted-foreground">{format(setlistDate, 'PPP')}</p>
       </header>
@@ -204,7 +192,7 @@ export default function SetlistDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle>Añadir Canción al Setlist</CardTitle>
-            <CardDescription>Selecciona una canción de tu biblioteca.</CardDescription>
+            <CardDescription>Selecciona una canción de la biblioteca.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Select onValueChange={setSelectedSong} value={selectedSong}>

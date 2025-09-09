@@ -110,7 +110,8 @@ export default function SetlistsPage() {
     const newSetlistData = {
       name,
       date: date.toISOString(),
-      userId: user.uid
+      userId: user.uid,
+      songs: [], // Start with an empty array of songs
     };
     
     try {
@@ -148,10 +149,10 @@ export default function SetlistsPage() {
                 Crear Nuevo Setlist
               </Button>
             </SheetTrigger>
-            <SheetContent className="bg-white text-black">
+            <SheetContent>
               <SheetHeader>
-                <SheetTitle className="text-black">Crear Nuevo Setlist</SheetTitle>
-                <SheetDescription className="text-gray-600">
+                <SheetTitle>Crear Nuevo Setlist</SheetTitle>
+                <SheetDescription>
                   Dale un nombre y una fecha a tu próximo evento. Haz clic en
                   crear cuando termines.
                 </SheetDescription>
@@ -159,7 +160,7 @@ export default function SetlistsPage() {
               <form onSubmit={handleCreateSetlist}>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="setlist-name" className="text-right text-black">
+                    <Label htmlFor="setlist-name" className="text-right">
                       Nombre
                     </Label>
                     <Input
@@ -171,7 +172,7 @@ export default function SetlistsPage() {
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="setlist-date" className="text-right text-black">
+                    <Label htmlFor="setlist-date" className="text-right">
                       Fecha
                     </Label>
                     <Popover>

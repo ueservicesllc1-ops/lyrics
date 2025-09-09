@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -18,11 +19,20 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Input } from '@/components/ui/input'; // Importar Input
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+} from 'firebase/firestore';
+import SetlistCard from '@/components/SetlistCard';
+import type { Setlist } from '@/app/setlists/page';
 
-// Definimos la interfaz aquí también
 interface Song {
   id: string;
   title: string;
@@ -35,9 +45,11 @@ export default function DashboardPage() {
 
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoadingSongs, setIsLoadingSongs] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(''); // Estado para el buscador
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Función para obtener las canciones
+  const [setlists, setSetlists] = useState<Setlist[]>([]);
+  const [isLoadingSetlists, setIsLoadingSetlists] = useState(true);
+
   const fetchSongs = useCallback(async () => {
     setIsLoadingSongs(true);
     try {
@@ -49,11 +61,31 @@ export default function DashboardPage() {
       setSongs(songsData);
     } catch (e) {
       console.error('Error fetching songs: ', e);
-      // Opcional: podrías mostrar un error al usuario
     } finally {
       setIsLoadingSongs(false);
     }
   }, []);
+
+  const fetchSetlists = useCallback(async () => {
+    if (!user) return;
+    setIsLoadingSetlists(true);
+    try {
+      const q = query(
+        collection(db, 'setlists'),
+        where('userId', '==', user.uid),
+        orderBy('name', 'asc')
+      );
+      const querySnapshot = await getDocs(q);
+      const setlistsData = querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() } as Setlist)
+      );
+      setSetlists(setlistsData);
+    } catch (e) {
+      console.error('Error fetching setlists: ', e);
+    } finally {
+      setIsLoadingSetlists(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -61,8 +93,9 @@ export default function DashboardPage() {
     }
     if (user) {
       fetchSongs();
+      fetchSetlists();
     }
-  }, [user, loading, router, fetchSongs]);
+  }, [user, loading, router, fetchSongs, fetchSetlists]);
 
   if (loading || !user) {
     return (
@@ -71,11 +104,12 @@ export default function DashboardPage() {
       </div>
     );
   }
-  
-  // Filtrar canciones basado en el término de búsqueda
-  const filteredSongs = songs.filter(song =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  const filteredSongs = songs.filter(
+    (song) =>
+      song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (song.artist &&
+        song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -87,19 +121,18 @@ export default function DashboardPage() {
         </p>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Tarjeta de Biblioteca con la lista de canciones */}
         <Card className="h-full flex flex-col">
           <CardHeader>
             <CardTitle>Biblioteca de Canciones</CardTitle>
             <CardDescription>
               Repertorio central de canciones disponibles.
             </CardDescription>
-             <Input
-                placeholder="Buscar por título o artista..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="mt-2"
-              />
+            <Input
+              placeholder="Buscar por título o artista..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="mt-2"
+            />
           </CardHeader>
           <CardContent className="flex-grow">
             {isLoadingSongs ? (
@@ -126,24 +159,42 @@ export default function DashboardPage() {
                 </Table>
               </div>
             ) : (
-               <p className="text-muted-foreground text-center py-4">
-                {songs.length > 0 ? 'No se encontraron canciones.' : 'No hay canciones en la biblioteca.'}
+              <p className="text-muted-foreground text-center py-4">
+                {songs.length > 0
+                  ? 'No se encontraron canciones.'
+                  : 'No hay canciones en la biblioteca.'}
               </p>
             )}
           </CardContent>
         </Card>
-        
-        {/* Tarjeta de Setlists (sin cambios) */}
-        <Card className="h-full">
+
+        <Card className="h-full flex flex-col">
           <CardHeader>
             <CardTitle>Mis Setlists</CardTitle>
             <CardDescription>
-              Crea y organiza tus setlists personalizados para los eventos.
+              Tus setlists personales para próximos eventos.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {/* Contenido adicional puede ir aquí si es necesario */}
+          <CardContent className="flex-grow">
+            {isLoadingSetlists ? (
+              <p>Cargando setlists...</p>
+            ) : setlists.length > 0 ? (
+              <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto p-1">
+                {setlists.map((setlist) => (
+                  <SetlistCard key={setlist.id} setlist={setlist} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-center py-4">
+                Aún no has creado ningún setlist.
+              </p>
+            )}
           </CardContent>
+          <CardFooter>
+            <Link href="/setlists">
+                <Button>Gestionar Setlists</Button>
+            </Link>
+          </CardFooter>
         </Card>
       </div>
     </main>
