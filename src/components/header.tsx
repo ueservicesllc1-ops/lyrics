@@ -30,7 +30,7 @@ export function Header() {
         </div>
         {user && (
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2" title="Conectado a Firebase">
+            <div className="flex items-center gap-2" title="Conectado a Firebase. ¡Tu sesión está activa!">
                 <Circle className="h-3 w-3 text-green-500 fill-current" />
                 <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
             </div>
