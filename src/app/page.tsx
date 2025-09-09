@@ -32,6 +32,7 @@ import {
 } from 'firebase/firestore';
 import SetlistCard from '@/components/SetlistCard';
 import type { Setlist } from '@/app/setlists/page';
+import { Rocket } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -191,11 +192,20 @@ export default function DashboardPage() {
             )}
           </CardContent>
           <CardFooter>
-            <Link href="/setlists">
-                <Button>Gestionar Setlists</Button>
+            <Link href="/setlists" className='w-full'>
+                <Button className='w-full'>Gestionar Setlists</Button>
             </Link>
           </CardFooter>
         </Card>
+      </div>
+
+       <div className="mt-8">
+        <Link href="/setlists" passHref>
+          <Button size="lg" className="w-full">
+            <Rocket className="mr-2 h-5 w-5" />
+            Iniciar Presentación
+          </Button>
+        </Link>
       </div>
     </main>
   );
