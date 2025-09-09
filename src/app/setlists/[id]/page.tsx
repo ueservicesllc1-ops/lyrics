@@ -18,7 +18,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, PlusCircle, MinusCircle, Clapperboard } from 'lucide-react';
+import { ArrowLeft, PlusCircle, MinusCircle, Clapperboard, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Setlist } from '../page';
 import {
@@ -27,6 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Asumimos que la interfaz Song también está disponible o la definimos aquí
 interface Song {
@@ -55,8 +56,6 @@ export default function SetlistDetailPage() {
     setIsLoading(true);
     setError(null);
 
-    // Si el ID es local, no podemos hacer nada más que mostrar un error,
-    // ya que no tenemos sus datos.
     if (isLocal) {
         setError("Este setlist es local y no se puede editar. Por favor, vuelve y crea uno nuevo que se guarde en la nube.");
         setIsLoading(false);
@@ -97,9 +96,9 @@ export default function SetlistDetailPage() {
     } catch (e: any) {
       console.error('Error fetching data: ', e);
        if (e.code === 'permission-denied') {
-           setError('Error de permisos al cargar los datos.');
+           setError('Error de permisos al cargar los datos. Revisa las reglas de seguridad de Firestore.');
        } else {
-           setError('No se pudieron cargar los datos del setlist.');
+           setError(`No se pudieron cargar los datos del setlist: ${e.message}`);
        }
     } finally {
       setIsLoading(false);
@@ -135,29 +134,31 @@ export default function SetlistDetailPage() {
   
   const handleAddSong = async (songId: string) => {
     if (isLocal) return;
+    setError(null);
     try {
         const setlistRef = doc(db, "setlist", setlistId);
         await updateDoc(setlistRef, {
             songs: arrayUnion(songId)
         });
         updateSongLists(songId, 'add');
-    } catch(e) {
+    } catch(e: any) {
         console.error("Error adding song: ", e);
-        setError("No se pudo añadir la canción.");
+        setError(`No se pudo añadir la canción: ${e.message}`);
     }
   };
   
   const handleRemoveSong = async (songId: string) => {
     if (isLocal) return;
+    setError(null);
     try {
         const setlistRef = doc(db, "setlist", setlistId);
         await updateDoc(setlistRef, {
             songs: arrayRemove(songId)
         });
         updateSongLists(songId, 'remove');
-    } catch(e) {
+    } catch(e: any) {
         console.error("Error removing song: ", e);
-        setError("No se pudo quitar la canción.");
+        setError(`No se pudo quitar la canción: ${e.message}`);
     }
   };
 
@@ -166,11 +167,7 @@ export default function SetlistDetailPage() {
     return <div className="flex justify-center items-center h-screen"><p>Cargando detalles del setlist...</p></div>;
   }
 
-  if (error) {
-    return <div className="container mx-auto p-4 text-center"><p className="text-red-500">{error}</p><Button onClick={() => router.push('/setlists')} className="mt-4">Volver</Button></div>;
-  }
-
-  if (!setlist) {
+  if (!setlist && !error) {
     return <div className="container mx-auto p-4 text-center"><p>No se encontró el setlist.</p><Button onClick={() => router.push('/setlists')} className="mt-4">Volver</Button></div>;
   }
 
@@ -178,30 +175,32 @@ export default function SetlistDetailPage() {
     <main className="container mx-auto p-4">
       <header className="mb-8">
         <div className="flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-4xl font-bold">{setlist.name}</h1>
-                <TooltipProvider>
-                    <Tooltip>
-                    <TooltipTrigger>
-                        <div
-                        className={`h-4 w-4 rounded-full ${
-                            isLocal ? 'bg-red-500' : 'bg-green-500'
-                        }`}
-                        />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>
-                        {isLocal
-                            ? 'Cambios no guardados en la nube.'
-                            : 'Setlist guardado en Firestore.'}
-                        </p>
-                    </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-              </div>
-                <p className="text-muted-foreground">{format(setlist.date.toDate(), 'PPP')}</p>
-            </div>
+            {setlist && (
+                 <div>
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-4xl font-bold">{setlist.name}</h1>
+                        <TooltipProvider>
+                            <Tooltip>
+                            <TooltipTrigger>
+                                <div
+                                className={`h-4 w-4 rounded-full ${
+                                    isLocal ? 'bg-red-500' : 'bg-green-500'
+                                }`}
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>
+                                {isLocal
+                                    ? 'Cambios no guardados en la nube.'
+                                    : 'Setlist guardado en Firestore.'}
+                                </p>
+                            </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                    <p className="text-muted-foreground">{format(setlist.date.toDate(), 'PPP')}</p>
+                </div>
+            )}
             <div className="flex gap-2">
                 <Button variant="outline" onClick={() => router.push('/setlists')}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> Volver
@@ -213,6 +212,13 @@ export default function SetlistDetailPage() {
         </div>
       </header>
 
+      {error && (
+         <Alert variant="destructive" className="mb-8">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Columna de Canciones Disponibles */}
         <Card>
@@ -223,7 +229,7 @@ export default function SetlistDetailPage() {
             {availableSongs.length > 0 ? availableSongs.map(song => (
               <div key={song.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary">
                 <span>{song.title} <span className="text-xs text-muted-foreground">{song.artist}</span></span>
-                <Button variant="ghost" size="icon" onClick={() => handleAddSong(song.id)}>
+                <Button variant="ghost" size="icon" onClick={() => handleAddSong(song.id)} disabled={isLocal}>
                   <PlusCircle className="h-5 w-5 text-green-500" />
                 </Button>
               </div>
@@ -240,7 +246,7 @@ export default function SetlistDetailPage() {
              {setlistSongs.length > 0 ? setlistSongs.map(song => (
               <div key={song.id} className="flex items-center justify-between p-2 rounded-md hover:bg-secondary">
                 <span>{song.title} <span className="text-xs text-muted-foreground">{song.artist}</span></span>
-                <Button variant="ghost" size="icon" onClick={() => handleRemoveSong(song.id)}>
+                <Button variant="ghost" size="icon" onClick={() => handleRemoveSong(song.id)} disabled={isLocal}>
                   <MinusCircle className="h-5 w-5 text-red-500" />
                 </Button>
               </div>

@@ -29,10 +29,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import SetlistCard from '@/components/SetlistCard';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export interface Setlist {
   id: string;
@@ -53,6 +54,7 @@ export default function SetlistsPage() {
   const fetchSetlists = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
+    setError(null);
     try {
       const q = query(
         collection(db, 'setlist'),
@@ -68,7 +70,7 @@ export default function SetlistsPage() {
       if (e.code === 'permission-denied') {
            setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
       } else {
-           setError('No se pudieron cargar los setlists.');
+           setError(`No se pudieron cargar los setlists: ${e.message}`);
       }
     } finally {
       setIsLoading(false);
@@ -109,7 +111,7 @@ export default function SetlistsPage() {
        if (e.code === 'permission-denied') {
            setError('No se pudo guardar. Revisa las reglas de seguridad de Firestore.');
        } else {
-            setError('No se pudo guardar el setlist.');
+            setError(`No se pudo guardar el setlist: ${e.message}`);
        }
     } finally {
       setIsLoading(false);
@@ -176,7 +178,12 @@ export default function SetlistsPage() {
               </div>
             </CardContent>
             <CardFooter className="flex-col items-start">
-              {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+              {error && (
+                <Alert variant="destructive" className="mb-4 w-full">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? 'Creando...' : 'Crear Setlist'}
               </Button>
@@ -193,6 +200,11 @@ export default function SetlistsPage() {
           <CardContent className="space-y-4">
             {isLoading && setlists.length === 0 ? (
               <p>Cargando setlists...</p>
+            ) : error && setlists.length === 0 ? (
+                <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
             ) : setlists.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">
                 Aún no has creado ningún setlist.
