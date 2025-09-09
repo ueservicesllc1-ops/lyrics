@@ -1,30 +1,64 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import type { Setlist } from "@/app/setlists/page";
-import { format } from "date-fns";
-import Link from "next/link";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import type { Setlist } from '@/app/setlists/page';
+import { format } from 'date-fns';
+import Link from 'next/link';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface SetlistCardProps {
-    setlist: Setlist;
+  setlist: Setlist;
 }
 
 export default function SetlistCard({ setlist }: SetlistCardProps) {
-    // Firestore Timestamp to JS Date
-    const date = setlist.date.toDate();
+  const date = setlist.date.toDate();
+  const isLocal = setlist.id.startsWith('local-');
 
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{setlist.name}</CardTitle>
-                <CardDescription>{format(date, 'PPP')}</CardDescription>
-            </CardHeader>
-            <CardFooter>
-                <Link href={`/setlists/${setlist.id}`}>
-                    <Button variant="outline" size="sm">Ver Detalles</Button>
-                </Link>
-            </CardFooter>
-        </Card>
-    );
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <CardTitle>{setlist.name}</CardTitle>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <div
+                  className={`h-3 w-3 rounded-full ${
+                    isLocal ? 'bg-red-500' : 'bg-green-500'
+                  }`}
+                />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {isLocal
+                    ? 'Este setlist no está guardado en la nube.'
+                    : 'Setlist guardado en Firestore.'}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        <CardDescription>{format(date, 'PPP')}</CardDescription>
+      </CardHeader>
+      <CardFooter>
+        <Link href={`/setlists/${setlist.id}`}>
+          <Button variant="outline" size="sm">
+            Ver Detalles
+          </Button>
+        </Link>
+      </CardFooter>
+    </Card>
+  );
 }

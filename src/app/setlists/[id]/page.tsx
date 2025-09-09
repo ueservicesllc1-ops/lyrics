@@ -19,6 +19,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, PlusCircle, MinusCircle, Clapperboard } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Setlist } from '../page';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
 
 // Asumimos que la interfaz Song también está disponible o la definimos aquí
 interface Song {
@@ -40,6 +47,7 @@ export default function SetlistDetailPage() {
   const router = useRouter();
   const { user } = useAuth();
   const setlistId = params.id as string;
+  const isLocal = setlistId.startsWith('local-');
 
   const fetchSetlistAndSongs = useCallback(async () => {
     if (!user || !setlistId) return;
@@ -48,8 +56,9 @@ export default function SetlistDetailPage() {
 
     try {
       // --- SIMULACIÓN PARA IDs LOCALES ---
-      if (setlistId.startsWith('local-')) {
+      if (isLocal) {
         // Para la demo, creamos un setlist falso si el ID es local
+        // Nota: esto no persistirá datos entre páginas, es solo para la vista
         const localSetlist: Setlist = {
             id: setlistId,
             name: "Setlist de Demostración",
@@ -89,7 +98,7 @@ export default function SetlistDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user, setlistId]);
+  }, [user, setlistId, isLocal]);
   
   useEffect(() => {
     fetchSetlistAndSongs();
@@ -142,9 +151,29 @@ export default function SetlistDetailPage() {
   return (
     <main className="container mx-auto p-4">
       <header className="mb-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-start">
             <div>
+              <div className="flex items-center gap-3">
                 <h1 className="text-4xl font-bold">{setlist.name}</h1>
+                <TooltipProvider>
+                    <Tooltip>
+                    <TooltipTrigger>
+                        <div
+                        className={`h-4 w-4 rounded-full ${
+                            isLocal ? 'bg-red-500' : 'bg-green-500'
+                        }`}
+                        />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>
+                        {isLocal
+                            ? 'Cambios no guardados en la nube.'
+                            : 'Setlist guardado en Firestore.'}
+                        </p>
+                    </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+              </div>
                 <p className="text-muted-foreground">{format(setlist.date.toDate(), 'PPP')}</p>
             </div>
             <div className="flex gap-2">
