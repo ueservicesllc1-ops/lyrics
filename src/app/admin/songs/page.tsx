@@ -103,7 +103,7 @@ export default function SongsPage() {
         <div>
           <h1 className="text-4xl font-bold">Mis Canciones</h1>
           <p className="text-muted-foreground">
-            Añade y gestiona las canciones de tu repertorio.
+            Añade y gestiona las canciones de tu setlist.
           </p>
         </div>
         <Link href="/admin">
@@ -161,7 +161,7 @@ export default function SongsPage() {
         
         <Card>
           <CardHeader>
-            <CardTitle>Repertorio</CardTitle>
+            <CardTitle>Setlist</CardTitle>
              <CardDescription>
               Esta es tu lista de canciones guardadas.
             </CardDescription>
