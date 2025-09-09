@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useRef, useTransition, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useTransition, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,19 +26,26 @@ const initialState: State = {
   errors: {},
 };
 
-export default function UploadLyricsPage() {
-  const { user, loading: authLoading } = useAuth();
+function UploadLyricsForm() {
+  const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [state, setState] = useState<State>(initialState);
   const [isPending, startTransition] = useTransition();
 
+  // Controlled components state
+  const [title, setTitle] = useState(searchParams.get('title') || '');
+  const [artist, setArtist] = useState(searchParams.get('artist') || '');
+  const [lyrics, setLyrics] = useState(searchParams.get('lyrics') || '');
+
   useEffect(() => {
-    if (!authLoading && (user?.email !== 'ueservicesllc1@gmail.com')) {
-      router.push('/');
-    }
-  }, [user, authLoading, router]);
+    // Update state if query params change
+    setTitle(searchParams.get('title') || '');
+    setArtist(searchParams.get('artist') || '');
+    setLyrics(searchParams.get('lyrics') || '');
+  }, [searchParams]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -49,14 +56,10 @@ export default function UploadLyricsPage() {
     if (user?.uid) {
         formData.append('userId', user.uid);
     } else {
-        // This case should ideally not be hit if an admin is logged in, but as a fallback:
-        // We allow anonymous submission, but we won't be able to track the user.
-        // This relies on Firestore rules allowing any authenticated (including anonymous) write.
         formData.append('userId', 'anonymous');
     }
 
     startTransition(async () => {
-      // We pass the previous state, even though we reset it, for consistency with the hook's signature
       const result = await saveSong(initialState, formData);
       setState(result);
 
@@ -66,10 +69,92 @@ export default function UploadLyricsPage() {
           description: 'La canción ha sido guardada correctamente.',
         });
         formRef.current?.reset();
-        setState(initialState);
+        // Clear controlled inputs and remove query params from URL
+        setTitle('');
+        setArtist('');
+        setLyrics('');
+        router.replace('/admin/upload', { scroll: false });
       }
     });
   };
+
+  return (
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="title">Nombre de la Canción</Label>
+        <Input 
+          id="title" 
+          name="title" 
+          placeholder="Ej: Amazing Grace" 
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required 
+        />
+        {state.errors?.title && <p className="text-destructive text-sm">{state.errors.title[0]}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="artist">Artista</Label>
+        <Input 
+          id="artist" 
+          name="artist" 
+          placeholder="Ej: John Newton" 
+          value={artist}
+          onChange={(e) => setArtist(e.target.value)}
+          required 
+        />
+        {state.errors?.artist && <p className="text-destructive text-sm">{state.errors.artist[0]}</p>}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="lyrics">Letra de la Canción</Label>
+        <Textarea
+          id="lyrics"
+          name="lyrics"
+          placeholder="Amazing grace! How sweet the sound..."
+          value={lyrics}
+          onChange={(e) => setLyrics(e.target.value)}
+          required
+          className="min-h-[250px]"
+        />
+        {state.errors?.lyrics && <p className="text-destructive text-sm">{state.errors.lyrics[0]}</p>}
+      </div>
+      
+      <Button type="submit" disabled={isPending}>
+        {isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Guardando...
+          </>
+        ) : (
+          'Guardar Canción'
+        )}
+      </Button>
+
+      {state.message && state.message !== 'success' && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error al Guardar</AlertTitle>
+          <AlertDescription>
+            {state.message}
+          </AlertDescription>
+        </Alert>
+      )}
+    </form>
+  );
+}
+
+
+export default function UploadLyricsPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && (user?.email !== 'ueservicesllc1@gmail.com')) {
+      router.push('/');
+    }
+  }, [user, authLoading, router]);
+
 
   if (authLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -97,52 +182,9 @@ export default function UploadLyricsPage() {
             <CardDescription>Completa el formulario para añadir una nueva canción al repertorio.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="title">Nombre de la Canción</Label>
-                <Input id="title" name="title" placeholder="Ej: Amazing Grace" required />
-                 {state.errors?.title && <p className="text-destructive text-sm">{state.errors.title[0]}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="artist">Artista</Label>
-                <Input id="artist" name="artist" placeholder="Ej: John Newton" required />
-                {state.errors?.artist && <p className="text-destructive text-sm">{state.errors.artist[0]}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lyrics">Letra de la Canción</Label>
-                <Textarea
-                  id="lyrics"
-                  name="lyrics"
-                  placeholder="Amazing grace! How sweet the sound..."
-                  required
-                  className="min-h-[250px]"
-                />
-                 {state.errors?.lyrics && <p className="text-destructive text-sm">{state.errors.lyrics[0]}</p>}
-              </div>
-              
-              <Button type="submit" disabled={isPending}>
-                {isPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Guardando...
-                  </>
-                ) : (
-                  'Guardar Canción'
-                )}
-              </Button>
-
-              {state.message && state.message !== 'success' && (
-                <Alert variant="destructive" className="mt-4">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle>Error al Guardar</AlertTitle>
-                  <AlertDescription>
-                    {state.message}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </form>
+            <Suspense fallback={<div>Loading form...</div>}>
+              <UploadLyricsForm />
+            </Suspense>
           </CardContent>
         </Card>
       </main>

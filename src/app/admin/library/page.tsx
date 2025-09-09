@@ -74,6 +74,16 @@ export default function LibraryAdminPage() {
       }
     });
   };
+  
+  const getEditUrl = (song: Song) => {
+      const params = new URLSearchParams({
+          title: song.title,
+          artist: song.artist,
+          lyrics: song.lyrics,
+      });
+      return `/admin/upload?${params.toString()}`;
+  }
+
 
   if (loading || dataLoading) {
     return (
@@ -134,7 +144,7 @@ export default function LibraryAdminPage() {
                         <TableCell>{song.artist}</TableCell>
                         <TableCell className="text-right">
                              <Button asChild variant="ghost" size="icon">
-                                <Link href={`/admin/library/${song.id}/edit`}>
+                                <Link href={getEditUrl(song)}>
                                     <Pencil className="h-4 w-4" />
                                 </Link>
                             </Button>
