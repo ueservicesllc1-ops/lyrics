@@ -8,8 +8,6 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
-  Timestamp
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +37,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export interface Setlist {
   id: string;
   name: string;
-  date: string | Timestamp;
+  date: string;
   userId: string;
   songs: string[];
 }
@@ -57,9 +55,8 @@ export default function SetlistsPage() {
     setIsLoading(true);
     try {
       const q = query(
-        collection(db, 'setlists'), // Use 'setlists' (plural)
-        where('userId', '==', user.uid),
-        orderBy('name', 'asc')
+        collection(db, 'setlists'),
+        where('userId', '==', user.uid)
       );
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
@@ -69,7 +66,7 @@ export default function SetlistsPage() {
     } catch (e) {
       console.error('Error fetching documents: ', e);
        if ((e as any).code === 'permission-denied') {
-        setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas y de que el índice compuesto exista (se te debería haber pedido crearlo en un error de la consola anterior).');
+        setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
       } else {
         setError('No se pudieron cargar los setlists.');
       }
@@ -103,10 +100,8 @@ export default function SetlistsPage() {
       userId: user.uid,
     };
     
-    console.log('Attempting to save to Firestore:', newSetlistData);
-
     try {
-      await addDoc(collection(db, 'setlists'), newSetlistData); // Use 'setlists' (plural)
+      await addDoc(collection(db, 'setlists'), newSetlistData);
       setName('');
       setDate(undefined);
       await fetchSetlists(); // Refresh the list
@@ -182,7 +177,7 @@ export default function SetlistsPage() {
               </div>
             </CardContent>
             <CardFooter className="flex-col items-start">
-               {error && (
+               {error && !isLoading && (
                 <Alert variant="destructive" className="mb-4 w-full">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
