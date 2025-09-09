@@ -5,11 +5,11 @@ import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { Shield } from 'lucide-react';
-
-const ADMIN_EMAIL = 'ueservicesllc1@gmail.com';
+import { Switch } from './ui/switch';
+import { Label } from './ui/label';
 
 export default function AuthStatus() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin, isAdminView, toggleViewAsAdmin } = useAuth();
 
   if (loading) {
     return <p className="text-muted-foreground">Cargando...</p>;
@@ -18,7 +18,20 @@ export default function AuthStatus() {
   if (user) {
     return (
       <div className="flex items-center gap-4">
-        {user.email === ADMIN_EMAIL && (
+        {isAdmin && (
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="admin-view-switch"
+              checked={isAdminView}
+              onCheckedChange={toggleViewAsAdmin}
+            />
+            <Label htmlFor="admin-view-switch" className="text-white">
+              {isAdminView ? 'Admin' : 'User'} View
+            </Label>
+          </div>
+        )}
+
+        {isAdminView && (
           <Link href="/admin">
             <Button variant="ghost" size="icon" className="hover:bg-blue-800 hover:text-white">
               <Shield className="h-6 w-6" />

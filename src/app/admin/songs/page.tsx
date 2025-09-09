@@ -47,7 +47,7 @@ export default function SongsPage() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdminView } = useAuth();
   const router = useRouter();
   
   // Estado para el formulario (solo visible para el admin)
@@ -55,7 +55,6 @@ export default function SongsPage() {
   const [artist, setArtist] = useState('');
   const [lyrics, setLyrics] = useState('');
   
-  const isAdmin = user?.email === ADMIN_EMAIL;
 
   const fetchSongs = useCallback(async () => {
     setIsLoading(true);
@@ -99,7 +98,7 @@ export default function SongsPage() {
 
   const handleAddSong = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAdmin || !user) {
+    if (!isAdminView || !user) {
       setError('Solo el administrador puede añadir canciones.');
       return;
     }
@@ -147,7 +146,7 @@ export default function SongsPage() {
       </header>
 
       <div className="grid gap-12 md:grid-cols-2">
-        {isAdmin && (
+        {isAdminView && (
            <Card>
             <CardHeader>
               <CardTitle>Añadir Nueva Canción</CardTitle>
@@ -196,7 +195,7 @@ export default function SongsPage() {
           </Card>
         )}
        
-        <div className={isAdmin ? '' : 'md:col-span-2'}>
+        <div className={isAdminView ? '' : 'md:col-span-2'}>
             <Card>
               <CardHeader>
                 <CardTitle>Biblioteca</CardTitle>
