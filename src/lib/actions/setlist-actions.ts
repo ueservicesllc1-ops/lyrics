@@ -11,7 +11,7 @@ const db = getFirestore(app);
 const setlistSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio.'),
   serviceDate: z.date(),
-  songIds: z.array(z.string()).min(1, "La setlist debe tener al menos una canción."),
+  songIds: z.array(z.string()),
   userId: z.string().min(1, "Se requiere un ID de usuario."),
 });
 

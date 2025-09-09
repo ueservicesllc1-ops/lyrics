@@ -52,10 +52,6 @@ export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId }: New
         setError("Por favor, selecciona una fecha.");
         return;
     }
-    if(currentSetlist.length === 0){
-        setError("La setlist está vacía. Añade al menos una canción.");
-        return;
-    }
     setError(null);
 
     startTransition(async () => {
