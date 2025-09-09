@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -45,7 +45,7 @@ export function EditSongForm({ song }: { song: Song }) {
   const { toast } = useToast();
   const router = useRouter();
   const updateSongWithId = updateSong.bind(null, song.id);
-  const [state, dispatch] = useFormState(updateSongWithId, initialState);
+  const [state, dispatch] = useActionState(updateSongWithId, initialState);
   
   useEffect(() => {
     if(state.message && state.message !== 'success') {
