@@ -41,9 +41,11 @@ export default function AdminPage() {
                     Administrador de Usuarios
                 </Link>
               </Button>
-              <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
-                <Upload className="mr-4 h-6 w-6" />
-                Subir Letras
+              <Button variant="outline" className="flex-1 justify-start p-6 text-lg" asChild>
+                <Link href="/admin/upload">
+                  <Upload className="mr-4 h-6 w-6" />
+                  Subir Letras
+                </Link>
               </Button>
               <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
                 <Bell className="mr-4 h-6 w-6" />
