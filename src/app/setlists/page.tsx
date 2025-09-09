@@ -9,6 +9,7 @@ import {
   query,
   where,
   Timestamp,
+  orderBy,
 } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -58,7 +59,8 @@ export default function SetlistsPage() {
     try {
       const q = query(
         collection(db, 'setlist'),
-        where('userId', '==', user.uid)
+        where('userId', '==', user.uid),
+        orderBy('name', 'asc')
       );
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
@@ -67,10 +69,12 @@ export default function SetlistsPage() {
       setSetlists(setlistsData);
     } catch (e: any) {
       console.error('Error fetching documents: ', e);
-      if (e.code === 'permission-denied') {
-           setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
+      if (e.code === 'failed-precondition') {
+        setError('Error de índice. Revisa la consola para crear el índice de Firestore necesario.');
+      } else if (e.code === 'permission-denied') {
+        setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
       } else {
-           setError(`No se pudieron cargar los setlists: ${e.message}`);
+        setError(`No se pudieron cargar los setlists: ${e.message}`);
       }
     } finally {
       setIsLoading(false);
@@ -97,12 +101,11 @@ export default function SetlistsPage() {
     setIsLoading(true);
 
     try {
-      // Simplificamos el objeto para que sea lo más parecido a la creación de canciones
       await addDoc(collection(db, 'setlist'), {
         name,
         date, // Pasamos el objeto Date directamente
         userId: user.uid,
-        // No incluimos 'songs: []' para evitar posibles problemas
+        songs: []
       });
       setName('');
       setDate(undefined);
