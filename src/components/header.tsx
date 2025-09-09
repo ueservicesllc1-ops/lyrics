@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Logo } from "@/components/icons";
@@ -5,7 +6,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
 
 export function Header() {
   const { user, signOutUser } = useAuth();
@@ -15,6 +16,8 @@ export function Header() {
     await signOutUser();
     router.push("/login");
   };
+
+  const isAdmin = user?.email === 'ueservicesllc1@gmail.com';
 
   return (
     <header className="py-3 px-4 md:px-6 border-b shrink-0 bg-card rounded-lg shadow-md">
@@ -27,6 +30,12 @@ export function Header() {
         </div>
         {user && (
           <div className="flex items-center gap-4">
+            {isAdmin && (
+               <Button variant="ghost" size="sm">
+                <Shield className="mr-2 h-4 w-4" />
+                Admin
+              </Button>
+            )}
             <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
             <Button variant="ghost" size="icon" onClick={handleSignOut}>
               <LogOut className="h-5 w-5" />
