@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useActionState, useEffect, useRef } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/header';
@@ -16,59 +15,59 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { saveSong } from '@/lib/actions/song-actions';
 
-const initialState: { message: string | null, errors?: any } = {
+type State = {
+  message?: string | null;
+  errors?: any;
+};
+
+const initialState: State = {
   message: null,
   errors: {},
 };
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Guardando...
-        </>
-      ) : (
-        'Guardar Canción'
-      )}
-    </Button>
-  );
-}
-
 export default function UploadLyricsPage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
-  
-  const [state, formAction] = useActionState(saveSong, initialState);
+  const [state, setState] = useState<State>(initialState);
+  const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (!loading && (user?.email !== 'ueservicesllc1@gmail.com')) {
-      router.push('/');
-    }
-  }, [user, loading, router]);
-  
-  useEffect(() => {
-    if (state.message === 'success') {
-      toast({
-        title: '¡Éxito!',
-        description: 'La canción ha sido guardada correctamente.',
-      });
-      formRef.current?.reset();
-    } else if (state.message && state.message !== 'success') {
-      toast({
-        variant: 'destructive',
-        title: 'Error al guardar',
-        description: state.message,
-      });
-    }
-  }, [state, toast]);
+  if (!authLoading && (user?.email !== 'ueservicesllc1@gmail.com')) {
+    router.push('/');
+  }
 
-  if (loading || user?.email !== 'ueservicesllc1@gmail.com') {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      const result = await saveSong(undefined, formData);
+      setState(result);
+
+      if (result.message === 'success') {
+        toast({
+          title: '¡Éxito!',
+          description: 'La canción ha sido guardada correctamente.',
+        });
+        formRef.current?.reset();
+        setState(initialState);
+      } else if (result.message) {
+        toast({
+          variant: 'destructive',
+          title: 'Error al guardar',
+          description: result.message,
+        });
+      }
+    });
+  };
+
+  if (authLoading) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+  
+  if (user?.email !== 'ueservicesllc1@gmail.com') {
+      return null;
   }
 
   return (
@@ -89,7 +88,7 @@ export default function UploadLyricsPage() {
             <CardDescription>Completa el formulario para añadir una nueva canción al repertorio.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form ref={formRef} action={formAction} className="space-y-6">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="title">Nombre de la Canción</Label>
                 <Input id="title" name="title" placeholder="Ej: Amazing Grace" required />
@@ -114,7 +113,16 @@ export default function UploadLyricsPage() {
                  {state.errors?.lyrics && <p className="text-destructive text-sm">{state.errors.lyrics[0]}</p>}
               </div>
               
-              <SubmitButton />
+              <Button type="submit" disabled={isPending}>
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  'Guardar Canción'
+                )}
+              </Button>
             </form>
           </CardContent>
         </Card>

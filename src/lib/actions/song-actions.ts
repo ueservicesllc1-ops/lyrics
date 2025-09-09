@@ -26,7 +26,7 @@ const formSchema = z.object({
 });
 
 type State = {
-  message?: string | null;
+  message: string | null;
   errors?: {
     title?: string[];
     artist?: string[];
@@ -34,7 +34,7 @@ type State = {
   };
 };
 
-export async function saveSong(prevState: State, formData: FormData): Promise<State> {
+export async function saveSong(prevState: any, formData: FormData): Promise<State> {
   const validatedFields = formSchema.safeParse({
     title: formData.get('title'),
     artist: formData.get('artist'),
