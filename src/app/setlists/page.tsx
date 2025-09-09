@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where, Timestamp } from 'firebase/firestore';
-import { useAuth } from '@/context/AuthContext';
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  Timestamp
+} from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Input } from '@/components/ui/input';
 import {
   Card,
   CardContent,
@@ -14,7 +21,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -31,37 +39,39 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 export interface Setlist {
   id: string;
   name: string;
-  date: Timestamp;
+  date: string | Timestamp;
   userId: string;
-  songs: string[]; // Array of song IDs
+  songs: string[];
 }
 
 export default function SetlistsPage() {
   const [name, setName] = useState('');
   const [date, setDate] = useState<Date | undefined>();
   const [setlists, setSetlists] = useState<Setlist[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const fetchSetlists = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
-    setError(null);
     try {
-      // Querying 'setlist' collection
-      const q = query(collection(db, 'setlist'), where('userId', '==', user.uid));
+      const q = query(
+        collection(db, 'setlists'), // Use 'setlists' (plural)
+        where('userId', '==', user.uid),
+        orderBy('name', 'asc')
+      );
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Setlist)
       );
       setSetlists(setlistsData);
-    } catch (e: any) {
+    } catch (e) {
       console.error('Error fetching documents: ', e);
-       if (e.code === 'permission-denied') {
-        setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
+       if ((e as any).code === 'permission-denied') {
+        setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas y de que el índice compuesto exista (se te debería haber pedido crearlo en un error de la consola anterior).');
       } else {
-        setError(`No se pudieron cargar los setlists: ${e.message}`);
+        setError('No se pudieron cargar los setlists.');
       }
     } finally {
       setIsLoading(false);
@@ -74,7 +84,7 @@ export default function SetlistsPage() {
     }
   }, [user, fetchSetlists]);
 
- const handleCreateSetlist = async (e: React.FormEvent) => {
+  const handleCreateSetlist = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
       setError('Debes estar autenticado para crear un setlist.');
@@ -86,28 +96,26 @@ export default function SetlistsPage() {
     }
     setIsLoading(true);
     setError(null);
-
-    // Using a plain object with a string for the date, which is known to work
+    
     const newSetlistData = {
-      name: name,
-      date: date.toISOString(), // Simplified to ISO string
+      name,
+      date: date.toISOString(),
       userId: user.uid,
     };
     
-    console.log('Intentando guardar este objeto en Firestore:', newSetlistData);
+    console.log('Attempting to save to Firestore:', newSetlistData);
 
     try {
-      // Adding to 'setlist' collection
-      await addDoc(collection(db, 'setlist'), newSetlistData);
+      await addDoc(collection(db, 'setlists'), newSetlistData); // Use 'setlists' (plural)
       setName('');
       setDate(undefined);
-      await fetchSetlists(); // Refresh list
-    } catch (e: any) {
+      await fetchSetlists(); // Refresh the list
+    } catch (e) {
       console.error('Error adding document: ', e);
-       if (e.code === 'permission-denied') {
+       if ((e as any).code === 'permission-denied') {
            setError('No se pudo guardar. Revisa las reglas de seguridad de Firestore.');
        } else {
-            setError(`No se pudo guardar el setlist: ${e.message}`);
+            setError(`No se pudo guardar el setlist.`);
        }
     } finally {
       setIsLoading(false);
@@ -174,7 +182,7 @@ export default function SetlistsPage() {
               </div>
             </CardContent>
             <CardFooter className="flex-col items-start">
-              {error && (
+               {error && (
                 <Alert variant="destructive" className="mb-4 w-full">
                   <AlertTriangle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
@@ -186,6 +194,7 @@ export default function SetlistsPage() {
             </CardFooter>
           </form>
         </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Próximos Eventos</CardTitle>
@@ -196,15 +205,15 @@ export default function SetlistsPage() {
           <CardContent className="space-y-4">
             {isLoading && setlists.length === 0 ? (
               <p>Cargando setlists...</p>
-            ) : error && setlists.length === 0 ? (
+            ) : setlists.length === 0 && !error ? (
+              <p className="text-muted-foreground text-center py-8">
+                Aún no has creado ningún setlist.
+              </p>
+            ) : error ? (
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
-            ) : setlists.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                Aún no has creado ningún setlist.
-              </p>
             ) : (
               setlists.map((setlist) => (
                 <SetlistCard key={setlist.id} setlist={setlist} />
