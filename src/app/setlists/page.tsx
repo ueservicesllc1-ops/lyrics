@@ -16,7 +16,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -35,15 +34,14 @@ import { cn } from '@/lib/utils';
 import SetlistCard from '@/components/SetlistCard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetFooter,
-  SheetClose,
-} from '@/components/ui/sheet';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 export interface Setlist {
   id: string;
@@ -59,7 +57,7 @@ export default function SetlistsPage() {
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { user } = useAuth();
 
   const fetchSetlists = useCallback(async () => {
@@ -119,7 +117,7 @@ export default function SetlistsPage() {
       setName('');
       setDate(undefined);
       await fetchSetlists(); // Refresh the list
-      setIsSheetOpen(false); // Close the sheet on success
+      setIsDialogOpen(false); // Close the dialog on success
     } catch (e) {
       console.error('Error adding document: ', e);
        if ((e as any).code === 'permission-denied') {
@@ -142,21 +140,21 @@ export default function SetlistsPage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-            <SheetTrigger asChild>
+           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
               <Button>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Crear Nuevo Setlist
               </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Crear Nuevo Setlist</SheetTitle>
-                <SheetDescription>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Crear Nuevo Setlist</DialogTitle>
+                <DialogDescription>
                   Dale un nombre y una fecha a tu próximo evento. Haz clic en
                   crear cuando termines.
-                </SheetDescription>
-              </SheetHeader>
+                </DialogDescription>
+              </DialogHeader>
               <form onSubmit={handleCreateSetlist}>
                 <div className="grid gap-4 py-4">
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -209,14 +207,14 @@ export default function SetlistsPage() {
                     </Alert>
                   )}
                 </div>
-                <SheetFooter>
+                <DialogFooter>
                   <Button type="submit" disabled={isLoading}>
                     {isLoading ? 'Creando...' : 'Crear Setlist'}
                   </Button>
-                </SheetFooter>
+                </DialogFooter>
               </form>
-            </SheetContent>
-          </Sheet>
+            </DialogContent>
+          </Dialog>
           <Link href="/">
             <Button variant="outline">Volver al Inicio</Button>
           </Link>
