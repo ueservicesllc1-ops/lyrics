@@ -172,9 +172,9 @@ export default function SongsPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Setlist</CardTitle>
+            <CardTitle>Biblioteca</CardTitle>
             <CardDescription>
-              Esta es tu lista de canciones guardadas.
+              Esta es tu biblioteca de canciones guardadas.
             </CardDescription>
           </CardHeader>
           <CardContent>
