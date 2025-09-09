@@ -8,10 +8,11 @@ import { Header } from "@/components/header";
 import { SongSearchList } from "@/components/song-search-list";
 import { getSongs, type Song } from "@/lib/songs";
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BookOpen, ListMusic } from "lucide-react";
+import { BookOpen, ListMusic, PlusCircle } from "lucide-react";
 import { Setlist } from "@/components/setlist";
 import { AiSongSuggester } from "@/components/ai-song-suggester";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -52,6 +53,10 @@ export default function Home() {
     // but it no longer controls the LyricPlayer.
     setActiveSongId(song.id);
   };
+
+  const handleClearSetlist = () => {
+    setSetlist([]);
+  }
 
   if (loading || !user) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -101,11 +106,19 @@ export default function Home() {
           <div className="flex flex-col gap-4 overflow-hidden">
             <Card className="h-full flex flex-col">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ListMusic />
-                  Current Setlist
-                </CardTitle>
-                <CardDescription>Your list of songs for the event.</CardDescription>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="flex items-center gap-2">
+                        <ListMusic />
+                        Current Setlist
+                        </CardTitle>
+                        <CardDescription>Your list of songs for the event.</CardDescription>
+                    </div>
+                    <Button variant="outline" onClick={handleClearSetlist}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        New Setlist
+                    </Button>
+                </div>
               </CardHeader>
                <CardContent className="flex-1 overflow-y-auto">
                   <Setlist 
