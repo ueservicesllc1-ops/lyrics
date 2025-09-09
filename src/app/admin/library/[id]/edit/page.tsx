@@ -2,7 +2,7 @@
 "use client";
 
 import { getSongById } from '@/lib/songs';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { EditSongForm } from './edit-song-form';
 import { Header } from '@/components/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,9 +39,11 @@ function EditSongLoader({ id }: { id: string }) {
 }
 
 
-export default function EditSongPage({ params }: { params: { id: string } }) {
+export default function EditSongPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const params = useParams();
+  const id = typeof params.id === 'string' ? params.id : '';
   
   useEffect(() => {
     if (!loading && user?.email !== 'ueservicesllc1@gmail.com') {
@@ -51,6 +53,10 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
 
   if (loading || user?.email !== 'ueservicesllc1@gmail.com') {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+  
+  if (!id) {
+    return <div className="flex items-center justify-center h-screen">Invalid song ID.</div>;
   }
 
   return (
@@ -71,7 +77,7 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
             <CardDescription>Modifica los detalles de la canción y guarda los cambios.</CardDescription>
           </CardHeader>
           <CardContent>
-            <EditSongLoader id={params.id} />
+            <EditSongLoader id={id} />
           </CardContent>
         </Card>
       </main>
