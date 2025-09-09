@@ -17,6 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, PlusCircle, MinusCircle, Clapperboard } from 'lucide-react';
+import { format } from 'date-fns';
 import type { Setlist } from '../page';
 
 // Asumimos que la interfaz Song también está disponible o la definimos aquí
