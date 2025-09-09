@@ -15,10 +15,10 @@ export default async function Home() {
         <section className="w-full py-12 md:py-24 lg:py-32 bg-primary/10">
           <div className="container px-4 md:px-6 text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tighter">
-              Your Stream for Worship Lyrics
+              Build Your Perfect Setlist
             </h1>
             <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl mt-4">
-              Access a vast library of Christian song lyrics in a beautiful, teleprompter-style display. Powered by AI to help you find the perfect song for any moment.
+              Access a vast library of Christian song lyrics and create beautiful setlists. Powered by AI to help you find the perfect song for any moment.
             </p>
           </div>
         </section>
@@ -48,7 +48,7 @@ export default async function Home() {
         </section>
       </main>
       <footer className="py-6 px-4 md:px-6 border-t border-primary/10 text-center text-sm text-muted-foreground">
-        <p>LyricStream &copy; {new Date().getFullYear()}</p>
+        <p>MySetListApp &copy; {new Date().getFullYear()}</p>
       </footer>
     </div>
   );

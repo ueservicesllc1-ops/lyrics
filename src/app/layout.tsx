@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LyricStream',
-  description: 'A teleprompter for Christian song lyrics with AI-powered suggestions.',
+  title: 'MySetListApp',
+  description: 'Create and manage your setlists with AI-powered song suggestions.',
 };
 
 export default function RootLayout({

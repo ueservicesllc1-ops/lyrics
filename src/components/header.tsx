@@ -7,7 +7,7 @@ export function Header() {
       <div className="container mx-auto flex items-center gap-3">
         <Logo className="h-8 w-8 text-primary" />
         <Link href="/" className="text-2xl font-bold font-headline text-foreground">
-          LyricStream
+          MySetListApp
         </Link>
       </div>
     </header>
