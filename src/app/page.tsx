@@ -10,9 +10,14 @@ export default function Home() {
           Gestiona las letras de tus canciones y usa el teleprompter en vivo.
         </p>
       </div>
-      <div className="mt-8">
+      <div className="mt-8 flex gap-4">
         <Link href="/teleprompter">
           <Button size="lg">Ir al Teleprompter</Button>
+        </Link>
+        <Link href="/admin">
+          <Button size="lg" variant="outline">
+            Administrar
+          </Button>
         </Link>
       </div>
     </main>
