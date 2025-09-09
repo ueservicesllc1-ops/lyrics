@@ -37,18 +37,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // This state is for the UI, to track the logged-in administrator.
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const saveUserToFirestore = async (user: User) => {
-    // We don't save anonymous users to the 'users' collection
     if (user.isAnonymous) return;
     
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
-    // Only create a new document if one doesn't already exist.
     if (!userSnap.exists()) {
       try {
         await setDoc(userRef, {
@@ -56,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           uid: user.uid,
           createdAt: serverTimestamp(),
         });
-        console.log("New user data saved to Firestore.");
       } catch (error) {
         console.error("Error saving new user to Firestore: ", error);
       }
@@ -64,19 +60,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
     
   useEffect(() => {
-    // This listener is for UI purposes, to know who is logged in for admin access.
+    // This listener handles UI changes for the logged-in (non-anonymous) user.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      // We set the user state for anyone who is not anonymous.
-      if (currentUser && !currentUser.isAnonymous) {
-        setUser(currentUser);
-      } else {
-        setUser(null); // No admin user is signed in.
-      }
+      setUser(currentUser); // This can be a regular user or an anonymous user
       setLoading(false);
     });
 
-    // In parallel, we ensure there is always a session for DB ops.
-    // If no one is signed in (not admin, not anon), we sign in anonymously.
+    // We ensure there's always a user, signing in anonymously if needed.
+    // This helps with Firestore rules (`request.auth != null`).
     if (!auth.currentUser) {
         signInAnonymously(auth).catch(error => {
             console.error("Persistent anonymous sign-in failed on initial load:", error);
@@ -98,14 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   
   const signOutUser = () => {
-    // When the admin signs out, we ensure the anonymous session is re-established
-    // for subsequent database operations if needed.
-    return signOut(auth).then(() => {
-      setUser(null);
-      return signInAnonymously(auth).catch(error => {
-          console.error("Anonymous sign-in failed after sign out:", error);
-      });
-    });
+    return signOut(auth);
   };
   
   const signInWithGoogle = async () => {
@@ -129,7 +113,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signInWithGoogle
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  // Only render children when loading is false to ensure user state is resolved
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

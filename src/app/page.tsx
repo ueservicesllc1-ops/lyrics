@@ -8,11 +8,11 @@ import { Header } from "@/components/header";
 import { SongSearchList } from "@/components/song-search-list";
 import { getSongs, type Song } from "@/lib/songs";
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { BookOpen, ListMusic, PlusCircle } from "lucide-react";
+import { BookOpen, ListMusic } from "lucide-react";
 import { Setlist } from "@/components/setlist";
 import { AiSongSuggester } from "@/components/ai-song-suggester";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { NewSetlistDialog } from "@/components/new-setlist-dialog";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -47,12 +47,6 @@ export default function Home() {
         setActiveSongId(null);
     }
   }
-
-  const handleSelectSong = (song: Song) => {
-    // This function is kept for potential future use, like showing a preview,
-    // but it no longer controls the LyricPlayer.
-    setActiveSongId(song.id);
-  };
 
   const handleClearSetlist = () => {
     setSetlist([]);
@@ -114,10 +108,11 @@ export default function Home() {
                         </CardTitle>
                         <CardDescription>Your list of songs for the event.</CardDescription>
                     </div>
-                    <Button variant="outline" onClick={handleClearSetlist}>
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        New Setlist
-                    </Button>
+                    <NewSetlistDialog 
+                      currentSetlist={setlist} 
+                      onSetlistSaved={handleClearSetlist}
+                      userId={user.uid}
+                    />
                 </div>
               </CardHeader>
                <CardContent className="flex-1 overflow-y-auto">
