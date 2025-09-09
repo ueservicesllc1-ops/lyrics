@@ -12,7 +12,7 @@ import { BookOpen, ListMusic } from "lucide-react";
 import { Setlist } from "@/components/setlist";
 import { AiSongSuggester } from "@/components/ai-song-suggester";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { NewSetlistDialog } from "@/components/new-setlist-dialog";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -108,11 +108,7 @@ export default function Home() {
                         </CardTitle>
                         <CardDescription>Your list of songs for the event.</CardDescription>
                     </div>
-                    <NewSetlistDialog 
-                      currentSetlist={setlist} 
-                      onSetlistSaved={handleClearSetlist}
-                      userId={user.uid}
-                    />
+                     <Button variant="outline" onClick={handleClearSetlist}>Clear Setlist</Button>
                 </div>
               </CardHeader>
                <CardContent className="flex-1 overflow-y-auto">

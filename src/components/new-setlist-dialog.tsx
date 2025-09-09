@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, Calendar as CalendarIcon, Loader2, AlertTriangle } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2, AlertTriangle } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -32,9 +32,10 @@ type NewSetlistDialogProps = {
     currentSetlist: Song[];
     onSetlistSaved: () => void;
     userId: string;
+    children?: ReactNode; // To allow passing a trigger button
 };
 
-export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId }: NewSetlistDialogProps) {
+export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId, children }: NewSetlistDialogProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -57,7 +58,6 @@ export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId }: New
     startTransition(async () => {
         const songIds = currentSetlist.map(song => song.id);
         
-        // Calling the client-side function directly
         const result = await saveSetlist({
             name,
             serviceDate: date,
@@ -83,10 +83,7 @@ export function NewSetlistDialog({ currentSetlist, onSetlistSaved, userId }: New
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Setlist
-        </Button>
+        {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
