@@ -36,15 +36,18 @@ export default function LibraryAdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const fetchSongs = () => {
+  const fetchSongs = async () => {
     setDataLoading(true);
-    getSongs().then(fetchedSongs => {
+    setError(null);
+    try {
+      const fetchedSongs = await getSongs();
       setSongs(fetchedSongs);
-      setDataLoading(false);
-    }).catch(err => {
+    } catch (err: any) {
       console.error("Error fetching songs:", err);
+      setError(err.message || "No se pudieron cargar las canciones.");
+    } finally {
       setDataLoading(false);
-    });
+    }
   };
 
   useEffect(() => {
@@ -56,24 +59,32 @@ export default function LibraryAdminPage() {
   }, [user, loading, router]);
 
 
-  const handleDeleteSong = async (songId: string) => {
+  const handleDeleteSong = (songId: string) => {
     setError(null);
     startTransition(async () => {
       const result = await deleteSong(songId);
-      if (result?.error) {
-        setError(result.error);
+      if (result?.message && result.message !== 'success') {
+        setError(result.message);
       } else {
         toast({
             title: "¡Éxito!",
             description: "La canción ha sido eliminada correctamente."
         });
-        fetchSongs(); // Re-fetch songs to update the list
+        await fetchSongs(); // Re-fetch songs to update the list
       }
     });
   };
 
   if (loading || dataLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+        <div className="flex flex-col h-screen bg-transparent text-foreground font-sans gap-4">
+            <Header />
+            <main className="flex-1 p-4 md:p-6 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-4">Cargando...</span>
+            </main>
+        </div>
+    );
   }
   
   if (user?.email !== 'ueservicesllc1@gmail.com') {

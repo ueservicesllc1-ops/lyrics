@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef, useTransition } from 'react';
+import { useState, useRef, useTransition, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/header';
@@ -17,7 +17,7 @@ import { saveSong } from '@/lib/actions/song-actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type State = {
-  message?: string | null;
+  message: string | null;
   errors?: any;
 };
 
@@ -34,28 +34,27 @@ export default function UploadLyricsPage() {
   const [state, setState] = useState<State>(initialState);
   const [isPending, startTransition] = useTransition();
 
-  if (!authLoading && (user?.email !== 'ueservicesllc1@gmail.com')) {
-    router.push('/');
-  }
+  useEffect(() => {
+    if (!authLoading && (user?.email !== 'ueservicesllc1@gmail.com')) {
+      router.push('/');
+    }
+  }, [user, authLoading, router]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setState(initialState); // Clear previous errors
+    
     const formData = new FormData(event.currentTarget);
     
-    // Add user ID to form data if user is available
     if (user?.uid) {
         formData.append('userId', user.uid);
     } else {
-        setState({ message: "Error: Usuario no autenticado. No se puede guardar la canción."});
+        setState({ message: "Error: Usuario no autenticado. No se puede guardar la canción.", errors: {} });
         return;
     }
 
-
     startTransition(async () => {
-      // Clear previous error messages
-      setState(initialState);
-      
-      const result = await saveSong(undefined, formData);
+      const result = await saveSong(initialState, formData);
       setState(result);
 
       if (result.message === 'success') {

@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -35,10 +36,10 @@ type State = {
   };
 };
 
-export async function saveSong(prevState: any, formData: FormData): Promise<State> {
+export async function saveSong(prevState: State, formData: FormData): Promise<State> {
   const userId = formData.get('userId');
   if (!userId) {
-    return { message: 'Error: Usuario no autenticado. No se puede guardar la canción.' };
+    return { message: 'Error: Usuario no autenticado. No se puede guardar la canción.', errors: {} };
   }
 
   const validatedFields = formSchema.safeParse({
@@ -73,32 +74,35 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
     revalidatePath('/admin/library');
     revalidatePath('/');
 
-    return { message: 'success' };
+    return { message: 'success', errors: {} };
   } catch (e: unknown) {
     const error = e as Error;
     console.error('Error adding document: ', error);
-    // Return the specific Firebase error message
-    return { message: `Error de base de datos: ${error.message}` };
+    return { message: `Error de base de datos: ${error.message}`, errors: {} };
   }
 }
 
 
-export async function deleteSong(songId: string): Promise<{ error?: string } | void> {
+export async function deleteSong(songId: string): Promise<{ message: string | null }> {
   if (!songId) {
-      return { error: 'ID de canción no válido.' };
+      return { message: 'ID de canción no válido.' };
   }
   try {
       const songDocRef = doc(db, 'songs', songId);
       await deleteDoc(songDocRef);
       revalidatePath('/admin/library');
-      return;
+      return { message: 'success' };
   } catch (error: any) {
       console.error("Error deleting song:", error);
-      return { error: `Error de base de datos: ${error.message}` };
+      return { message: `Error de base de datos: ${error.message}` };
   }
 }
 
-export async function updateSong(id: string, prevState: any, formData: FormData): Promise<State> {
+export async function updateSong(id: string, prevState: State, formData: FormData): Promise<State> {
+    if (!id) {
+        return { message: 'ID de canción no válido.', errors: {} };
+    }
+    
     const validatedFields = formSchema.safeParse({
         title: formData.get('title'),
         artist: formData.get('artist'),
@@ -127,7 +131,7 @@ export async function updateSong(id: string, prevState: any, formData: FormData)
     } catch (e: unknown) {
         const error = e as Error;
         console.error('Error updating document: ', error);
-        return { message: `Error de base de datos: ${error.message}` };
+        return { message: `Error de base de datos: ${error.message}`, errors: {} };
     }
     
     revalidatePath(`/admin/library`);
