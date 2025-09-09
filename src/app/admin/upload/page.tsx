@@ -16,7 +16,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { saveSong } from '@/lib/actions/song-actions';
 
-const initialState = {
+const initialState: { message: string | null, errors?: any } = {
   message: null,
   errors: {},
 };

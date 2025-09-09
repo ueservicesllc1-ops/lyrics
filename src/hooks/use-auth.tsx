@@ -13,7 +13,7 @@ import {
   signInWithRedirect,
   getRedirectResult
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 
 const auth = getAuth(app);
@@ -31,19 +31,23 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const saveUserToFirestore = async (user: User) => {
-  if (!user) return;
-  const userRef = doc(db, 'users', user.uid);
-  try {
-    // Use set with merge:true to create or update user data without overwriting.
-    await setDoc(userRef, {
-      email: user.email,
-      uid: user.uid,
-      createdAt: serverTimestamp(),
-    }, { merge: true });
-    console.log("User data saved/updated in Firestore.");
-  } catch (error) {
-    console.error("Error saving user to Firestore: ", error);
-  }
+    if (!user) return;
+    const userRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userRef);
+
+    // Solo escribe los datos si el usuario no existe.
+    if (!userSnap.exists()) {
+        try {
+            await setDoc(userRef, {
+                email: user.email,
+                uid: user.uid,
+                createdAt: serverTimestamp(),
+            });
+            console.log("New user data saved to Firestore.");
+        } catch (error) {
+            console.error("Error saving new user to Firestore: ", error);
+        }
+    }
 };
 
 
@@ -54,25 +58,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      // We set loading to false here, but the redirect handler might update the user again.
       setLoading(false);
     });
 
-    // Handle the redirect result from Google Sign-In.
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          // This means the user has just signed in via redirect.
-          const credential = GoogleAuthProvider.credentialFromResult(result);
           const user = result.user;
           setUser(user);
-          // Save the new user's data to Firestore.
           saveUserToFirestore(user);
         }
       }).catch((error) => {
-        console.error("Error processing redirect result:", error);
+        console.error("Error during redirect result:", {
+            code: error.code,
+            message: error.message,
+        });
       }).finally(() => {
-        // Ensure loading is false after processing is complete.
         setLoading(false);
       });
 
@@ -95,9 +96,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
-    // This will redirect the user to the Google sign-in page.
-    // After signing in, Firebase will redirect back to your app,
-    // and the getRedirectResult effect will handle the rest.
     return signInWithRedirect(auth, provider);
   };
 
