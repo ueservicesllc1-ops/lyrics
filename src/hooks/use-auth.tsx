@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      // Do not set loading to false here, wait for redirect result
     });
 
     getRedirectResult(auth)
@@ -89,7 +89,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    // Use signInWithRedirect instead of signInWithPopup
+    // This is a workaround for sandboxed environments like Firebase Studio
+    // that block popups and also have issues with redirects inside iframes.
+    if (window.top) {
+        window.top.location.href = `https://lyricstream-jezhi.firebaseapp.com/__/auth/handler?apiKey=${auth.config.apiKey}&appName=%5BDEFAULT%5D&authType=signInViaRedirect&providerId=${provider.providerId}`;
+        return;
+    }
     return signInWithRedirect(auth, provider);
   };
 
