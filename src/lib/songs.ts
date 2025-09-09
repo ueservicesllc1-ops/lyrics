@@ -1,5 +1,5 @@
 
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where, doc, getDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 
 const db = getFirestore(app);
@@ -27,6 +27,25 @@ export async function getSongs(): Promise<Song[]> {
     return []; // Return an empty array in case of an error
   }
 }
+
+// This function now fetches a single song by its ID from Firestore.
+export async function getSongById(id: string): Promise<Song | undefined> {
+    try {
+        const songDocRef = doc(db, 'songs', id);
+        const songSnap = await getDoc(songDocRef);
+
+        if (!songSnap.exists()) {
+            return undefined;
+        }
+
+        return { id: songSnap.id, ...songSnap.data() } as Song;
+
+    } catch (error) {
+        console.error("Error fetching song by ID from Firestore: ", error);
+        return undefined;
+    }
+}
+
 
 // This function now fetches a single song by its slug from Firestore.
 export async function getSongBySlug(slug: string): Promise<Song | undefined> {

@@ -122,8 +122,10 @@ export default function LibraryAdminPage() {
                         <TableCell className="font-medium">{song.title}</TableCell>
                         <TableCell>{song.artist}</TableCell>
                         <TableCell className="text-right">
-                             <Button variant="ghost" size="icon" disabled>
-                                <Pencil className="h-4 w-4" />
+                             <Button asChild variant="ghost" size="icon">
+                                <Link href={`/admin/library/${song.id}/edit`}>
+                                    <Pencil className="h-4 w-4" />
+                                </Link>
                             </Button>
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>

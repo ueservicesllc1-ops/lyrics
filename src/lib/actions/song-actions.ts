@@ -1,11 +1,11 @@
-
 'use server';
 
 import { z } from 'zod';
-import { getFirestore, collection, addDoc, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/lib/firebase';
+import { redirect } from 'next/navigation';
 
 const db = getFirestore(app);
 
@@ -102,4 +102,47 @@ export async function deleteSong(songId: string): Promise<{ error?: string } | v
       console.error("Error deleting song:", error);
       return { error: `Error de base de datos: ${error.message}` };
   }
+}
+
+export async function updateSong(id: string, prevState: any, formData: FormData): Promise<State> {
+    const currentUser = auth.currentUser;
+    if (!currentUser || currentUser.email !== 'ueservicesllc1@gmail.com') {
+        return { message: "No tienes permiso para realizar esta acción." };
+    }
+
+    const validatedFields = formSchema.safeParse({
+        title: formData.get('title'),
+        artist: formData.get('artist'),
+        lyrics: formData.get('lyrics'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            message: 'Por favor, corrige los errores del formulario.',
+            errors: validatedFields.error.flatten().fieldErrors,
+        };
+    }
+
+    const { title, artist, lyrics } = validatedFields.data;
+    const slug = slugify(title);
+
+    try {
+        const songDocRef = doc(db, 'songs', id);
+        await updateDoc(songDocRef, {
+            title,
+            artist,
+            lyrics,
+            slug,
+        });
+
+    } catch (e: unknown) {
+        const error = e as Error;
+        console.error('Error updating document: ', error);
+        return { message: `Error de base de datos: ${error.message}` };
+    }
+    
+    revalidatePath(`/admin/library`);
+    revalidatePath(`/admin/library/${id}/edit`);
+    revalidatePath('/');
+    redirect(`/admin/library`);
 }
