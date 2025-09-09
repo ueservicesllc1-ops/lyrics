@@ -97,11 +97,12 @@ export default function SetlistsPage() {
     setIsLoading(true);
 
     try {
+      // Simplificamos el objeto para que sea lo más parecido a la creación de canciones
       await addDoc(collection(db, 'setlist'), {
         name,
-        date: Timestamp.fromDate(date),
+        date, // Pasamos el objeto Date directamente
         userId: user.uid,
-        songs: [],
+        // No incluimos 'songs: []' para evitar posibles problemas
       });
       setName('');
       setDate(undefined);
