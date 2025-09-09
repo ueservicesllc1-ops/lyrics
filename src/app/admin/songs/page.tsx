@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { db, auth, onAuthStateChanged } from '@/lib/firebase';
 import type { User } from 'firebase/auth';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,6 +30,7 @@ interface Song {
   title: string;
   artist: string;
   lyrics: string;
+  userId: string;
 }
 
 export default function SongsPage() {
@@ -50,8 +51,10 @@ export default function SongsPage() {
 
   const fetchSongs = async () => {
     if (!user) return;
+    setIsLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'songs'));
+      const q = query(collection(db, 'songs'), where('userId', '==', user.uid));
+      const querySnapshot = await getDocs(q);
       const songsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Song)
       );
@@ -59,6 +62,8 @@ export default function SongsPage() {
     } catch (e) {
       console.error('Error fetching documents: ', e);
       setError('No se pudieron cargar las canciones. Revisa los permisos de la base de datos.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -179,6 +184,9 @@ export default function SongsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+             {isLoading ? (
+              <p>Cargando canciones...</p>
+            ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -195,6 +203,7 @@ export default function SongsPage() {
                 ))}
               </TableBody>
             </Table>
+            )}
           </CardContent>
         </Card>
       </div>
