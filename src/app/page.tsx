@@ -3,8 +3,13 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -35,32 +40,32 @@ export default function DashboardPage() {
         </p>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Biblioteca de Canciones</CardTitle>
-            <CardDescription>
-              Explora todas las canciones disponibles en el repertorio central.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Link href="/admin/songs">
-              <Button>Ver Biblioteca</Button>
-            </Link>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Mis Setlists</CardTitle>
-            <CardDescription>
-              Crea y organiza tus setlists personalizados para los eventos.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/setlists">
-              <Button>Gestionar Mis Setlists</Button>
-            </Link>
-          </CardContent>
-        </Card>
+        <Link href="/admin/songs" className="block hover:shadow-lg transition-shadow rounded-lg">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Biblioteca de Canciones</CardTitle>
+              <CardDescription>
+                Explora todas las canciones disponibles en el repertorio central.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+                {/* Contenido adicional puede ir aquí si es necesario */}
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/setlists" className="block hover:shadow-lg transition-shadow rounded-lg">
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle>Mis Setlists</CardTitle>
+              <CardDescription>
+                Crea y organiza tus setlists personalizados para los eventos.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+               {/* Contenido adicional puede ir aquí si es necesario */}
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </main>
   );
