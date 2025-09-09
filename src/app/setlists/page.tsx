@@ -147,7 +147,7 @@ export default function SetlistsPage() {
                 Crear Nuevo Setlist
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Crear Nuevo Setlist</DialogTitle>
                 <DialogDescription>
