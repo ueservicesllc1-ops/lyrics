@@ -10,11 +10,14 @@ import {
   signInWithEmailAndPassword, 
   signOut,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  UserCredential
 } from 'firebase/auth';
+import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 interface AuthContextType {
   user: User | null;
@@ -26,6 +29,21 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const saveUserToFirestore = async (user: User) => {
+  if (!user) return;
+  const userRef = doc(db, 'users', user.uid);
+  try {
+    await setDoc(userRef, {
+      email: user.email,
+      uid: user.uid,
+      createdAt: serverTimestamp(),
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error saving user to Firestore: ", error);
+  }
+};
+
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -43,17 +61,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return signInWithEmailAndPassword(auth, email, pass);
   };
   
-  const signUp = (email: string, pass: string) => {
-    return createUserWithEmailAndPassword(auth, email, pass);
+  const signUp = async (email: string, pass: string) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+    await saveUserToFirestore(userCredential.user);
+    return userCredential;
   };
   
   const signOutUser = () => {
     return signOut(auth);
   };
   
-  const signInWithGoogle = () => {
+  const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    await saveUserToFirestore(result.user);
+    return result;
   };
 
   const value = {

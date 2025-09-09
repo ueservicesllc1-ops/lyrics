@@ -35,9 +35,11 @@ export default function AdminPage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-4">
-              <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
-                <Users className="mr-4 h-6 w-6" />
-                Administrador de Usuarios
+              <Button variant="outline" className="flex-1 justify-start p-6 text-lg" asChild>
+                <Link href="/admin/users">
+                    <Users className="mr-4 h-6 w-6" />
+                    Administrador de Usuarios
+                </Link>
               </Button>
               <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
                 <Upload className="mr-4 h-6 w-6" />
