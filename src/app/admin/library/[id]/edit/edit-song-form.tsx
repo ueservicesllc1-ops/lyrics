@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 type State = {
     message: string | null;
@@ -42,6 +43,7 @@ function SubmitButton() {
 
 export function EditSongForm({ song }: { song: Song }) {
   const { toast } = useToast();
+  const router = useRouter();
   const updateSongWithId = updateSong.bind(null, song.id);
   const [state, dispatch] = useFormState(updateSongWithId, initialState);
   
@@ -52,8 +54,14 @@ export function EditSongForm({ song }: { song: Song }) {
         title: 'Error al Actualizar',
         description: state.message,
       });
+    } else if (state.message === 'success') {
+        toast({
+            title: "¡Éxito!",
+            description: "La canción ha sido actualizada correctamente."
+        });
+        // The redirect is now handled in the server action
     }
-  }, [state, toast]);
+  }, [state, toast, router]);
 
   return (
     <form action={dispatch} className="space-y-6">

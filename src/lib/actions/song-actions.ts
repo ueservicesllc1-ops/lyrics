@@ -4,7 +4,6 @@ import { z } from 'zod';
 import { getFirestore, collection, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/firebase';
 import { redirect } from 'next/navigation';
 
 const db = getFirestore(app);
@@ -37,9 +36,8 @@ type State = {
 };
 
 export async function saveSong(prevState: any, formData: FormData): Promise<State> {
-  const currentUser = auth.currentUser;
-  
-  if (!currentUser) {
+  const userId = formData.get('userId');
+  if (!userId) {
     return { message: 'Error: Usuario no autenticado. No se puede guardar la canción.' };
   }
 
@@ -67,7 +65,7 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
       artist,
       lyrics,
       slug,
-      createdBy: currentUser.uid, // Store the user's ID
+      createdBy: userId,
       createdAt: serverTimestamp(),
     });
 
@@ -86,10 +84,6 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
 
 
 export async function deleteSong(songId: string): Promise<{ error?: string } | void> {
-  const currentUser = auth.currentUser;
-  if (!currentUser || currentUser.email !== 'ueservicesllc1@gmail.com') {
-      return { error: "No tienes permiso para realizar esta acción." };
-  }
   if (!songId) {
       return { error: 'ID de canción no válido.' };
   }
@@ -105,11 +99,6 @@ export async function deleteSong(songId: string): Promise<{ error?: string } | v
 }
 
 export async function updateSong(id: string, prevState: any, formData: FormData): Promise<State> {
-    const currentUser = auth.currentUser;
-    if (!currentUser || currentUser.email !== 'ueservicesllc1@gmail.com') {
-        return { message: "No tienes permiso para realizar esta acción." };
-    }
-
     const validatedFields = formSchema.safeParse({
         title: formData.get('title'),
         artist: formData.get('artist'),
