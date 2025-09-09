@@ -19,7 +19,6 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const [song, setSong] = useState<Song | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
-  const id = params.id;
 
   useEffect(() => {
     if (!loading && user?.email !== 'ueservicesllc1@gmail.com') {
@@ -29,7 +28,7 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     async function fetchSong() {
-      const fetchedSong = await getSongById(id);
+      const fetchedSong = await getSongById(params.id);
       if (!fetchedSong) {
         notFound();
       } else {
@@ -40,7 +39,7 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
     if (user) { // Fetch song only when user is available
       fetchSong();
     }
-  }, [id, user]);
+  }, [params.id, user]);
 
   if (loading || dataLoading || !song || user?.email !== 'ueservicesllc1@gmail.com') {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
