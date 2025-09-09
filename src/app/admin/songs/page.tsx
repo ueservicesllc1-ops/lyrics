@@ -44,7 +44,7 @@ export default function SongsPage() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, loading: authLoading, isAdminView } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const router = useRouter();
 
   // Estado para el formulario (solo visible para el admin)
@@ -93,7 +93,7 @@ export default function SongsPage() {
 
   const handleAddSong = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAdminView || !user) {
+    if (!isAdmin || !user) {
       setError('Solo el administrador puede añadir canciones.');
       return;
     }
@@ -143,7 +143,7 @@ export default function SongsPage() {
       </header>
 
       <div className="grid gap-12 md:grid-cols-2">
-        {isAdminView && (
+        {isAdmin && (
           <Card>
             <CardHeader>
               <CardTitle>Añadir Nueva Canción</CardTitle>
@@ -192,7 +192,7 @@ export default function SongsPage() {
           </Card>
         )}
 
-        <div className={isAdminView ? '' : 'md:col-span-2'}>
+        <div className={isAdmin ? '' : 'md:col-span-2'}>
           <Card>
             <CardHeader>
               <CardTitle>Biblioteca</CardTitle>
