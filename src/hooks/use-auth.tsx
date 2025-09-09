@@ -11,8 +11,7 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithRedirect,
-  getRedirectResult,
-  UserCredential
+  getRedirectResult
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
@@ -92,7 +91,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // This is a workaround for sandboxed environments like Firebase Studio
     // that block popups and also have issues with redirects inside iframes.
     if (window.top) {
-        window.top.location.href = `https://lyricstream-jezhi.firebaseapp.com/__/auth/handler?apiKey=${auth.config.apiKey}&appName=%5BDEFAULT%5D&authType=signInViaRedirect&providerId=${provider.providerId}`;
+        const authUrl = `https://lyricstream-jezhi.firebaseapp.com/__/auth/handler?apiKey=${auth.config.apiKey}&appName=%5BDEFAULT%5D&authType=signInViaRedirect&providerId=${provider.providerId}`;
+        window.top.location.href = authUrl;
         return;
     }
     return signInWithRedirect(auth, provider);
