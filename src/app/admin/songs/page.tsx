@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { db, auth, onAuthStateChanged } from '@/lib/firebase';
-import type { User } from 'firebase/auth';
+import { useState, useEffect, useCallback } from 'react';
+import { db } from '@/lib/firebase';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +23,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 
 interface Song {
   id: string;
@@ -40,16 +40,9 @@ export default function SongsPage() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const fetchSongs = async () => {
+  const fetchSongs = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -61,18 +54,17 @@ export default function SongsPage() {
       setSongs(songsData);
     } catch (e) {
       console.error('Error fetching documents: ', e);
-      setError('No se pudieron cargar las canciones. Revisa los permisos de la base de datos.');
+      setError('No se pudieron cargar las canciones.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user) {
       fetchSongs();
     }
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, fetchSongs]);
 
   const handleAddSong = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,32 +79,23 @@ export default function SongsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const docRef = await addDoc(collection(db, 'songs'), {
+      await addDoc(collection(db, 'songs'), {
         title,
         artist,
         lyrics,
         userId: user.uid,
       });
-      console.log('Document written with ID: ', docRef.id);
       setTitle('');
       setArtist('');
       setLyrics('');
       await fetchSongs(); // Refresh the list
     } catch (e) {
       console.error('Error adding document: ', e);
-      setError('No se pudo guardar la canción. Revisa los permisos de la base de datos.');
+      setError('No se pudo guardar la canción.');
     } finally {
       setIsLoading(false);
     }
   };
-  
-    if (!user) {
-    return (
-      <main className="container mx-auto p-4 flex justify-center items-center h-screen">
-        <p>Autenticando...</p>
-      </main>
-    );
-  }
 
   return (
     <main className="container mx-auto p-4">
@@ -184,8 +167,10 @@ export default function SongsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-             {isLoading ? (
+             {isLoading && songs.length === 0 ? (
               <p>Cargando canciones...</p>
+            ) : songs.length === 0 ? (
+              <p>Aún no has añadido ninguna canción.</p>
             ) : (
             <Table>
               <TableHeader>
