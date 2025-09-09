@@ -23,14 +23,16 @@ const formSchema = z.object({
   title: z.string().min(1, 'El título es obligatorio.'),
   artist: z.string().min(1, 'El artista es obligatorio.'),
   lyrics: z.string().min(1, 'La letra es obligatoria.'),
+  userId: z.string().min(1, 'El ID de usuario es obligatorio.'),
 });
 
 type State = {
   message: string | null;
   errors?: {
     title?: string[];
-    artist?: string[];
+    artist?:string[];
     lyrics?: string[];
+    userId?: string[];
   };
 };
 
@@ -39,6 +41,7 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
     title: formData.get('title'),
     artist: formData.get('artist'),
     lyrics: formData.get('lyrics'),
+    userId: formData.get('userId'),
   });
 
   if (!validatedFields.success) {
@@ -48,7 +51,7 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
     };
   }
 
-  const { title, artist, lyrics } = validatedFields.data;
+  const { title, artist, lyrics, userId } = validatedFields.data;
 
   try {
     const slug = slugify(title);
@@ -59,6 +62,7 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
       artist,
       lyrics,
       slug,
+      createdBy: userId, // Store the user's ID
       createdAt: serverTimestamp(),
     });
 

@@ -41,6 +41,15 @@ export default function UploadLyricsPage() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    
+    // Add user ID to form data if user is available
+    if (user?.uid) {
+        formData.append('userId', user.uid);
+    } else {
+        setState({ message: "Error: Usuario no autenticado. No se puede guardar la canción."});
+        return;
+    }
+
 
     startTransition(async () => {
       // Clear previous error messages
