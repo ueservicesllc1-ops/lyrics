@@ -33,11 +33,11 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <CardTitle>{setlist.name}</CardTitle>
+        <div className="flex items-start gap-2">
+          <CardTitle className="break-words">{setlist.name}</CardTitle>
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger className="flex-shrink-0 mt-1.5">
                 <div
                   className={`h-3 w-3 rounded-full ${
                     isLocal ? 'bg-red-500' : 'bg-green-500'
