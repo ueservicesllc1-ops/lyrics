@@ -2,9 +2,10 @@
 'use server';
 
 import { z } from 'zod';
-import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/lib/firebase';
 
 const db = getFirestore(app);
 
@@ -23,7 +24,6 @@ const formSchema = z.object({
   title: z.string().min(1, 'El título es obligatorio.'),
   artist: z.string().min(1, 'El artista es obligatorio.'),
   lyrics: z.string().min(1, 'La letra es obligatoria.'),
-  userId: z.string().min(1, 'El ID de usuario es obligatorio.'),
 });
 
 type State = {
@@ -37,11 +37,16 @@ type State = {
 };
 
 export async function saveSong(prevState: any, formData: FormData): Promise<State> {
+  const currentUser = auth.currentUser;
+  
+  if (!currentUser) {
+    return { message: 'Error: Usuario no autenticado. No se puede guardar la canción.' };
+  }
+
   const validatedFields = formSchema.safeParse({
     title: formData.get('title'),
     artist: formData.get('artist'),
     lyrics: formData.get('lyrics'),
-    userId: formData.get('userId'),
   });
 
   if (!validatedFields.success) {
@@ -51,7 +56,7 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
     };
   }
 
-  const { title, artist, lyrics, userId } = validatedFields.data;
+  const { title, artist, lyrics } = validatedFields.data;
 
   try {
     const slug = slugify(title);
@@ -62,11 +67,12 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
       artist,
       lyrics,
       slug,
-      createdBy: userId, // Store the user's ID
+      createdBy: currentUser.uid, // Store the user's ID
       createdAt: serverTimestamp(),
     });
 
     revalidatePath('/admin/upload');
+    revalidatePath('/admin/library');
     revalidatePath('/');
 
     return { message: 'success' };
@@ -75,5 +81,25 @@ export async function saveSong(prevState: any, formData: FormData): Promise<Stat
     console.error('Error adding document: ', error);
     // Return the specific Firebase error message
     return { message: `Error de base de datos: ${error.message}` };
+  }
+}
+
+
+export async function deleteSong(songId: string): Promise<{ error?: string } | void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser || currentUser.email !== 'ueservicesllc1@gmail.com') {
+      return { error: "No tienes permiso para realizar esta acción." };
+  }
+  if (!songId) {
+      return { error: 'ID de canción no válido.' };
+  }
+  try {
+      const songDocRef = doc(db, 'songs', songId);
+      await deleteDoc(songDocRef);
+      revalidatePath('/admin/library');
+      return;
+  } catch (error: any) {
+      console.error("Error deleting song:", error);
+      return { error: `Error de base de datos: ${error.message}` };
   }
 }
