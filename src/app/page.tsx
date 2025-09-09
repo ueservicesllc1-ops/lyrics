@@ -17,11 +17,6 @@ export default function Home() {
         <Link href="/setlists">
           <Button size="lg" variant="secondary">Crear Setlist</Button>
         </Link>
-        <Link href="/admin">
-          <Button size="lg" variant="outline">
-            Administrar
-          </Button>
-        </Link>
       </div>
     </main>
   );
