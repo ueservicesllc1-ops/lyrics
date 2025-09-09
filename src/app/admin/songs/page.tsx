@@ -8,7 +8,6 @@ import {
   addDoc,
   getDocs,
   query,
-  where,
   orderBy,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -41,57 +40,53 @@ interface Song {
   userId: string;
 }
 
-const ADMIN_EMAIL = 'ueservicesllc1@gmail.com'; 
-
 export default function SongsPage() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user, loading: authLoading, isAdminView } = useAuth();
   const router = useRouter();
-  
+
   // Estado para el formulario (solo visible para el admin)
   const [title, setTitle] = useState('');
   const [artist, setArtist] = useState('');
   const [lyrics, setLyrics] = useState('');
-  
 
   const fetchSongs = useCallback(async () => {
+    if (!user) return; // Se necesita un usuario para acceder, pero no para filtrar
     setIsLoading(true);
     setError(null);
     try {
-      // Muestra todas las canciones del administrador.
+      // Consulta para obtener TODAS las canciones, ordenadas por título.
+      // Ya no filtramos por userId para que todos vean la biblioteca completa.
       const q = query(
         collection(db, 'songs'),
-        // where('userId', '==', 'UID_DEL_ADMIN'), // Necesitamos el UID estático del admin
         orderBy('title', 'asc')
       );
       const querySnapshot = await getDocs(q);
       const songsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Song)
       );
-      // Filtramos en el cliente, ya que la consulta where por email no es posible directamente
-      // si no guardamos el email en el documento. Idealmente, obtendríamos el UID del admin
-      // y lo usaríamos en la consulta.
-      const adminSongs = songsData.filter(song => song.userId === 'AQUI_VA_EL_UID_DEL_ADMIN');
-      setSongs(songsData); // Temporalmente mostramos todas
+      setSongs(songsData);
     } catch (e: any) {
       console.error('Error fetching documents: ', e);
       if (e.code === 'failed-precondition') {
-          setError('La consulta requiere un índice. Por favor, créalo desde el enlace en la consola de errores del navegador.');
+        setError(
+          'La consulta requiere un índice. Por favor, créalo desde el enlace en la consola de errores del navegador.'
+        );
       } else {
-          setError('No se pudieron cargar las canciones.');
+        setError('No se pudieron cargar las canciones.');
       }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-        router.push('/login');
-        return;
+      router.push('/login');
+      return;
     }
     fetchSongs();
   }, [user, authLoading, router, fetchSongs]);
@@ -113,7 +108,7 @@ export default function SongsPage() {
         title,
         artist,
         lyrics,
-        userId: user.uid, 
+        userId: user.uid,
       });
       setTitle('');
       setArtist('');
@@ -128,7 +123,9 @@ export default function SongsPage() {
   };
 
   if (authLoading) {
-      return <div className="container mx-auto p-4 text-center">Cargando...</div>
+    return (
+      <div className="container mx-auto p-4 text-center">Cargando...</div>
+    );
   }
 
   return (
@@ -147,7 +144,7 @@ export default function SongsPage() {
 
       <div className="grid gap-12 md:grid-cols-2">
         {isAdminView && (
-           <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Añadir Nueva Canción</CardTitle>
               <CardDescription>
@@ -194,40 +191,42 @@ export default function SongsPage() {
             </form>
           </Card>
         )}
-       
+
         <div className={isAdminView ? '' : 'md:col-span-2'}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Biblioteca</CardTitle>
-                <CardDescription>
-                  Esta es tu biblioteca de canciones guardadas.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {isLoading && songs.length === 0 ? (
-                  <p>Cargando canciones...</p>
-                ) : songs.length === 0 ? (
-                  <p>Aún no hay ninguna canción en la biblioteca.</p>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Título</TableHead>
-                        <TableHead>Artista</TableHead>
+          <Card>
+            <CardHeader>
+              <CardTitle>Biblioteca</CardTitle>
+              <CardDescription>
+                Esta es la biblioteca de canciones guardadas.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading && songs.length === 0 ? (
+                <p>Cargando canciones...</p>
+              ) : songs.length === 0 ? (
+                <p>Aún no hay ninguna canción en la biblioteca.</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Título</TableHead>
+                      <TableHead>Artista</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {songs.map((song) => (
+                      <TableRow key={song.id}>
+                        <TableCell className="font-medium">
+                          {song.title}
+                        </TableCell>
+                        <TableCell>{song.artist || 'N/A'}</TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {songs.map((song) => (
-                        <TableRow key={song.id}>
-                          <TableCell className="font-medium">{song.title}</TableCell>
-                          <TableCell>{song.artist || 'N/A'}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
-            </Card>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </main>
