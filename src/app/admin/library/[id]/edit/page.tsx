@@ -14,21 +14,13 @@ import type { Song } from '@/lib/songs';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 
-export default function EditSongPage({ params }: { params: { id: string } }) {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+function EditSongLoader({ id }: { id: string }) {
   const [song, setSong] = useState<Song | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
 
   useEffect(() => {
-    if (!loading && user?.email !== 'ueservicesllc1@gmail.com') {
-      router.push('/');
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
     async function fetchSong() {
-      const fetchedSong = await getSongById(params.id);
+      const fetchedSong = await getSongById(id);
       if (!fetchedSong) {
         notFound();
       } else {
@@ -36,12 +28,28 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
       }
       setDataLoading(false);
     }
-    if (user) { // Fetch song only when user is available
-      fetchSong();
-    }
-  }, [params.id, user]);
+    fetchSong();
+  }, [id]);
 
-  if (loading || dataLoading || !song || user?.email !== 'ueservicesllc1@gmail.com') {
+  if (dataLoading || !song) {
+    return <div className="flex items-center justify-center h-full">Cargando datos de la canción...</div>;
+  }
+
+  return <EditSongForm song={song} />;
+}
+
+
+export default function EditSongPage({ params }: { params: { id: string } }) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  
+  useEffect(() => {
+    if (!loading && user?.email !== 'ueservicesllc1@gmail.com') {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  if (loading || user?.email !== 'ueservicesllc1@gmail.com') {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
@@ -63,7 +71,7 @@ export default function EditSongPage({ params }: { params: { id: string } }) {
             <CardDescription>Modifica los detalles de la canción y guarda los cambios.</CardDescription>
           </CardHeader>
           <CardContent>
-            <EditSongForm song={song} />
+            <EditSongLoader id={params.id} />
           </CardContent>
         </Card>
       </main>
