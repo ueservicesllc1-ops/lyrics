@@ -102,8 +102,8 @@ export default function SetlistsPage() {
 
     try {
       await addDoc(collection(db, 'setlist'), {
-        name,
-        date, // Pasamos el objeto Date directamente
+        name: name,
+        date: date,
         userId: user.uid,
         songs: []
       });
