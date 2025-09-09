@@ -7,12 +7,20 @@ export default function Home() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/admin/songs" className="flex-1">
-            <Button size="lg" className="w-full h-16 text-lg" variant="secondary">
+            <Button
+              size="lg"
+              className="w-full h-16 text-lg shadow-md transition-transform transform hover:scale-105"
+              variant="outline"
+            >
               BIBLIOTECA
             </Button>
           </Link>
           <Link href="/setlists" className="flex-1">
-            <Button size="lg" className="w-full h-16 text-lg" variant="secondary">
+            <Button
+              size="lg"
+              className="w-full h-16 text-lg shadow-md transition-transform transform hover:scale-105"
+              variant="outline"
+            >
               SETLIST
             </Button>
           </Link>
