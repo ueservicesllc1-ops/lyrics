@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Logo } from "@/components/icons";
@@ -5,7 +6,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useRouter } from "next/navigation";
-import { LogOut, Shield } from "lucide-react";
+import { LogOut, Shield, Circle } from "lucide-react";
 
 export function Header() {
   const { user, signOutUser } = useAuth();
@@ -29,6 +30,10 @@ export function Header() {
         </div>
         {user && (
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2" title="Conectado a Firebase">
+                <Circle className="h-3 w-3 text-green-500 fill-current" />
+                <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
+            </div>
             {isAdmin && (
                <Button variant="ghost" size="sm" asChild>
                 <Link href="/admin">
@@ -37,7 +42,6 @@ export function Header() {
                 </Link>
               </Button>
             )}
-            <span className="text-sm text-muted-foreground hidden md:block">{user.email}</span>
             <Button variant="ghost" size="icon" onClick={handleSignOut}>
               <LogOut className="h-5 w-5" />
             </Button>
