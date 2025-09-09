@@ -17,6 +17,7 @@ import {
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
+  signInAnonymously
 } from 'firebase/auth';
 import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from 'firebase/firestore';
 import { app } from '@/lib/firebase';
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const saveUserToFirestore = async (user: User) => {
+    if (user.isAnonymous) return; // No guardar usuarios anónimos
     const userRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userRef);
 
@@ -59,8 +61,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+      if (currentUser) {
+        setUser(currentUser);
+        setLoading(false);
+      } else {
+        // Si no hay usuario, intenta iniciar sesión anónimamente
+        signInAnonymously(auth).catch(error => {
+          console.error("Anonymous sign-in failed: ", error);
+          // Aún así, finaliza la carga para que la UI no se quede bloqueada
+          setLoading(false);
+        });
+      }
     });
     return () => unsubscribe();
   }, []);
