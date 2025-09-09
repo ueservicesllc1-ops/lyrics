@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const uiConfig = {
   signInFlow: 'popup',
-  signInSuccessUrl: '/admin',
+  signInSuccessUrl: '/', // Redirige al dashboard principal
   signInOptions: [
     GoogleAuthProvider.PROVIDER_ID,
     EmailAuthProvider.PROVIDER_ID,
@@ -44,7 +44,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/admin');
+      router.push('/'); // Si ya está logueado, va al dashboard
     }
   }, [user, loading, router]);
 
