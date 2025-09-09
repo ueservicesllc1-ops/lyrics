@@ -1,4 +1,6 @@
 
+"use client";
+
 import { getSongById } from '@/lib/songs';
 import { notFound } from 'next/navigation';
 import { EditSongForm } from './edit-song-form';
@@ -7,13 +9,41 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { Song } from '@/lib/songs';
+import { useAuth } from '@/hooks/use-auth';
+import { useRouter } from 'next/navigation';
 
-export default async function EditSongPage({ params }: { params: { id: string } }) {
+export default function EditSongPage({ params }: { params: { id: string } }) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [song, setSong] = useState<Song | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
   const id = params.id;
-  const song = await getSongById(id);
 
-  if (!song) {
-    notFound();
+  useEffect(() => {
+    if (!loading && user?.email !== 'ueservicesllc1@gmail.com') {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  useEffect(() => {
+    async function fetchSong() {
+      const fetchedSong = await getSongById(id);
+      if (!fetchedSong) {
+        notFound();
+      } else {
+        setSong(fetchedSong);
+      }
+      setDataLoading(false);
+    }
+    if (user) { // Fetch song only when user is available
+      fetchSong();
+    }
+  }, [id, user]);
+
+  if (loading || dataLoading || !song || user?.email !== 'ueservicesllc1@gmail.com') {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
   return (
