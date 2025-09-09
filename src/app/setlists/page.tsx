@@ -9,7 +9,6 @@ import {
   query,
   where,
   Timestamp,
-  orderBy,
 } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -57,8 +56,7 @@ export default function SetlistsPage() {
     try {
       const q = query(
         collection(db, 'setlists'),
-        where('userId', '==', user.uid),
-        orderBy('date', 'desc')
+        where('userId', '==', user.uid)
       );
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
