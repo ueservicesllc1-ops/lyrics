@@ -59,6 +59,10 @@ export default function SetlistDetailPage() {
       }
       
       const setlistData = { id: setlistDoc.id, ...setlistDoc.data() } as Setlist;
+      // Ensure songs array exists
+      if (!setlistData.songs) {
+        setlistData.songs = [];
+      }
       setSetlist(setlistData);
 
       // Fetch all available songs from the general library
@@ -213,7 +217,7 @@ export default function SetlistDetailPage() {
               </SelectTrigger>
               <SelectContent>
                 {availableSongs.length > 0 ? availableSongs
-                    .filter(song => !setlist.songs.includes(song.id))
+                    .filter(song => !setlist?.songs?.includes(song.id))
                     .map(song => (
                       <SelectItem key={song.id} value={song.id}>
                         {song.title}
