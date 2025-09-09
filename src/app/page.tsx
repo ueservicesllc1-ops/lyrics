@@ -19,7 +19,10 @@ export default function Home() {
   const [activeSong, setActiveSong] = useState<Song | null>(null);
 
   const handleAddToSetlist = (song: Song) => {
-    setSetlist((prev) => [...prev, song]);
+    // Avoid adding duplicates
+    if (!setlist.find(s => s.id === song.id)) {
+      setSetlist((prev) => [...prev, song]);
+    }
   };
 
   const handleRemoveFromSetlist = (songId: string) => {
@@ -31,9 +34,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground font-sans">
+    <div className="flex flex-col h-[calc(100vh-4rem)] bg-transparent text-foreground font-sans gap-4">
       <Header />
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 overflow-hidden">
+      <main className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 overflow-hidden">
         {/* Song Library */}
         <div className="flex flex-col gap-4 overflow-hidden">
            <Card className="h-full flex flex-col">
@@ -84,7 +87,7 @@ export default function Home() {
                 </CardTitle>
                 {activeSong && <CardDescription>{activeSong.title} - {activeSong.artist}</CardDescription>}
               </CardHeader>
-             <div className="flex-1_overflow-hidden_relative">
+             <div className="flex-1 overflow-hidden relative">
                 {activeSong ? (
                   <LyricPlayer song={activeSong} key={activeSong.id}/>
                 ) : (

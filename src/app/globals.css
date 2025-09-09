@@ -4,48 +4,70 @@
 
 @layer base {
   :root {
-    --background: 220 6% 10%;
+    --background: 25 35% 15%; /* Dark wood brown */
     --foreground: 210 20% 98%;
-    --card: 220 6% 10%;
-    --card-foreground: 210 20% 98%;
-    --popover: 220 6% 10%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 210 20% 98%;
+
+    /* Main panel color - brushed metal */
+    --card: 220 6% 80%;
+    --card-foreground: 220 10% 10%;
+
+    --popover: 220 6% 75%;
+    --popover-foreground: 220 10% 10%;
+    
+    /* Control color - cream/beige for knobs and faders */
+    --primary: 45 40% 85%;
     --primary-foreground: 220 10% 10%;
-    --secondary: 220 6% 18%;
+
+    --secondary: 220 6% 70%;
     --secondary-foreground: 210 20% 98%;
-    --muted: 220 6% 24%;
-    --muted-foreground: 220 5% 64%;
-    --accent: 220 6% 22%;
-    --accent-foreground: 210 20% 98%;
+
+    --muted: 220 6% 65%;
+    --muted-foreground: 220 5% 30%;
+
+    /* Accent color for active/hover states */
+    --accent: 45 40% 90%;
+    --accent-foreground: 220 10% 10%;
+
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 20% 98%;
-    --border: 220 6% 18%;
-    --input: 220 6% 18%;
-    --ring: 210 20% 90%;
+
+    --border: 220 6% 60%;
+    --input: 220 6% 75%;
+    --ring: 45 40% 85%;
     --radius: 0.5rem;
   }
  
   .dark {
-    --background: 220 6% 10%;
+    --background: 25 35% 15%; /* Dark wood brown */
     --foreground: 210 20% 98%;
-    --card: 220 6% 10%;
-    --card-foreground: 210 20% 98%;
-    --popover: 220 6% 10%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 210 20% 98%;
+
+    /* Main panel color - brushed metal */
+    --card: 220 6% 80%;
+    --card-foreground: 220 10% 10%;
+
+    --popover: 220 6% 75%;
+    --popover-foreground: 220 10% 10%;
+    
+    /* Control color - cream/beige for knobs and faders */
+    --primary: 45 40% 85%;
     --primary-foreground: 220 10% 10%;
-    --secondary: 220 6% 18%;
+
+    --secondary: 220 6% 70%;
     --secondary-foreground: 210 20% 98%;
-    --muted: 220 6% 24%;
-    --muted-foreground: 220 5% 64%;
-    --accent: 220 6% 22%;
-    --accent-foreground: 210 20% 98%;
+
+    --muted: 220 6% 65%;
+    --muted-foreground: 220 5% 30%;
+
+    /* Accent color for active/hover states */
+    --accent: 45 40% 90%;
+    --accent-foreground: 220 10% 10%;
+
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 20% 98%;
-    --border: 220 6% 18%;
-    --input: 220 6% 18%;
-    --ring: 210 20% 90%;
+
+    --border: 220 6% 60%;
+    --input: 220 6% 75%;
+    --ring: 45 40% 85%;
   }
 }
 
@@ -54,6 +76,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-card-foreground;
   }
 }
