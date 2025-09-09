@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db } from '@/lib/firebase';
+import { db, auth, onAuthStateChanged } from '@/lib/firebase';
+import type { User } from 'firebase/auth';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,8 +39,17 @@ export default function SongsPage() {
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const fetchSongs = async () => {
+    if (!user) return;
     try {
       const querySnapshot = await getDocs(collection(db, 'songs'));
       const songsData = querySnapshot.docs.map(
@@ -48,16 +58,23 @@ export default function SongsPage() {
       setSongs(songsData);
     } catch (e) {
       console.error('Error fetching documents: ', e);
-      setError('No se pudieron cargar las canciones.');
+      setError('No se pudieron cargar las canciones. Revisa los permisos de la base de datos.');
     }
   };
 
   useEffect(() => {
-    fetchSongs();
-  }, []);
+    if (user) {
+      fetchSongs();
+    }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleAddSong = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      setError('Debes estar autenticado para añadir canciones.');
+      return;
+    }
     if (!title || !lyrics) {
       setError('El título y la letra son obligatorios.');
       return;
@@ -69,6 +86,7 @@ export default function SongsPage() {
         title,
         artist,
         lyrics,
+        userId: user.uid,
       });
       console.log('Document written with ID: ', docRef.id);
       setTitle('');
@@ -82,6 +100,14 @@ export default function SongsPage() {
       setIsLoading(false);
     }
   };
+  
+    if (!user) {
+    return (
+      <main className="container mx-auto p-4 flex justify-center items-center h-screen">
+        <p>Autenticando...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="container mx-auto p-4">

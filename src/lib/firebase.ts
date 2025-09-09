@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 
 const firebaseConfig = {
   projectId: "lyricstream-jezhi",
@@ -16,4 +16,10 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-export { app, db, auth };
+// Sign in anonymously
+signInAnonymously(auth).catch((error) => {
+  console.error("Anonymous sign-in failed:", error);
+});
+
+
+export { app, db, auth, onAuthStateChanged };
