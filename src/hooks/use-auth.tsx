@@ -52,15 +52,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      // Do not set loading to false here, wait for redirect result
+      if (user) {
+        setUser(user);
+      }
+      // Delay setting loading to false until redirect result is processed
     });
 
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          // This is the signed-in user
           const user = result.user;
+          setUser(user);
           saveUserToFirestore(user).catch(err => console.error("Failed to save user from redirect", err));
         }
       }).catch((error) => {
@@ -88,14 +90,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    // This is a workaround for sandboxed environments like Firebase Studio
-    // that block popups and also have issues with redirects inside iframes.
-    if (window.top) {
-        const authUrl = `https://lyricstream-jezhi.firebaseapp.com/__/auth/handler?apiKey=${auth.config.apiKey}&appName=%5BDEFAULT%5D&authType=signInViaRedirect&providerId=${provider.providerId}`;
-        window.top.location.href = authUrl;
-        return;
+    
+    // Check if running in a top-level window (not an iframe)
+    if (window.top === window) {
+      return signInWithRedirect(auth, provider);
     }
-    return signInWithRedirect(auth, provider);
+
+    // Workaround for sandboxed environments like Firebase Studio
+    // that block popups and also have issues with redirects inside iframes.
+    // We manually construct the URL and redirect the top-level window.
+    try {
+        const authUrl = `https://${auth.config.authDomain}/__/auth/handler?apiKey=${auth.config.apiKey}&appName=${auth.app.name}&authType=signInViaRedirect&providerId=${provider.providerId}`;
+        if (window.top) {
+            window.top.location.href = authUrl;
+        } else {
+            // Fallback for extreme cases, though it might be blocked
+            window.location.href = authUrl;
+        }
+    } catch (e) {
+        console.error("Could not redirect for Google Sign-In:", e);
+        // Fallback to standard redirect if top-level navigation fails
+        return signInWithRedirect(auth, provider);
+    }
   };
 
   const value = {
