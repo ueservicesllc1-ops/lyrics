@@ -12,6 +12,8 @@ import {
   where,
   getDocs,
   Timestamp,
+  arrayUnion,
+  arrayRemove,
 } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -25,7 +27,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
 
 // Asumimos que la interfaz Song también está disponible o la definimos aquí
 interface Song {
@@ -54,34 +55,28 @@ export default function SetlistDetailPage() {
     setIsLoading(true);
     setError(null);
 
-    try {
-      // --- SIMULACIÓN PARA IDs LOCALES ---
-      if (isLocal) {
-        // Para la demo, creamos un setlist falso si el ID es local
-        // Nota: esto no persistirá datos entre páginas, es solo para la vista
-        const localSetlist: Setlist = {
-            id: setlistId,
-            name: "Setlist de Demostración",
-            date: Timestamp.now(),
-            userId: user.uid,
-            songs: [],
-        };
-        setSetlist(localSetlist);
-      } else {
-        // --- LÓGICA DE FIRESTORE (cuando funcione) ---
-        const docRef = doc(db, 'setlist', setlistId);
-        const docSnap = await getDoc(docRef);
+    // Si el ID es local, no podemos hacer nada más que mostrar un error,
+    // ya que no tenemos sus datos.
+    if (isLocal) {
+        setError("Este setlist es local y no se puede editar. Por favor, vuelve y crea uno nuevo que se guarde en la nube.");
+        setIsLoading(false);
+        return;
+    }
 
-        if (docSnap.exists() && docSnap.data().userId === user.uid) {
-          setSetlist({ id: docSnap.id, ...docSnap.data() } as Setlist);
-        } else {
-          setError('Setlist no encontrado o no tienes permiso para verlo.');
-          setIsLoading(false);
-          return;
-        }
+    try {
+      const docRef = doc(db, 'setlist', setlistId);
+      const docSnap = await getDoc(docRef);
+
+      let currentSetlist: Setlist | null = null;
+      if (docSnap.exists() && docSnap.data().userId === user.uid) {
+        currentSetlist = { id: docSnap.id, ...docSnap.data() } as Setlist;
+        setSetlist(currentSetlist);
+      } else {
+        setError('Setlist no encontrado o no tienes permiso para verlo.');
+        setIsLoading(false);
+        return;
       }
 
-      // Obtener todas las canciones del usuario
       const songsQuery = query(
         collection(db, 'songs'),
         where('userId', '==', user.uid)
@@ -92,9 +87,20 @@ export default function SetlistDetailPage() {
       );
       setAllSongs(allUserSongs);
 
-    } catch (e) {
+      if (currentSetlist) {
+         const songsInSetlist = allUserSongs.filter(song => currentSetlist!.songs.includes(song.id));
+         const songsNotInSetlist = allUserSongs.filter(song => !currentSetlist!.songs.includes(song.id));
+         setSetlistSongs(songsInSetlist);
+         setAvailableSongs(songsNotInSetlist);
+      }
+
+    } catch (e: any) {
       console.error('Error fetching data: ', e);
-      setError('No se pudieron cargar los datos del setlist.');
+       if (e.code === 'permission-denied') {
+           setError('Error de permisos al cargar los datos.');
+       } else {
+           setError('No se pudieron cargar los datos del setlist.');
+       }
     } finally {
       setIsLoading(false);
     }
@@ -104,35 +110,55 @@ export default function SetlistDetailPage() {
     fetchSetlistAndSongs();
   }, [fetchSetlistAndSongs]);
 
-  useEffect(() => {
-    if (setlist && allSongs.length > 0) {
-      const songsInSetlist = allSongs.filter(song => setlist.songs.includes(song.id));
-      const songsNotInSetlist = allSongs.filter(song => !setlist.songs.includes(song.id));
-      setSetlistSongs(songsInSetlist);
-      setAvailableSongs(songsNotInSetlist);
-    } else if (setlist) {
-        // Caso en el que el setlist existe pero no hay canciones en la librería
-        setSetlistSongs([]);
-        setAvailableSongs([]);
-    }
-  }, [setlist, allSongs]);
+  const updateSongLists = (songId: string, action: 'add' | 'remove') => {
+    let songToMove: Song | undefined;
+    let updatedAvailableSongs = [...availableSongs];
+    let updatedSetlistSongs = [...setlistSongs];
 
-  const handleAddSong = (songId: string) => {
-    if (!setlist) return;
+    if (action === 'add') {
+        songToMove = availableSongs.find(s => s.id === songId);
+        if (songToMove) {
+            updatedAvailableSongs = availableSongs.filter(s => s.id !== songId);
+            updatedSetlistSongs = [...setlistSongs, songToMove];
+        }
+    } else {
+        songToMove = setlistSongs.find(s => s.id === songId);
+        if (songToMove) {
+            updatedSetlistSongs = setlistSongs.filter(s => s.id !== songId);
+            updatedAvailableSongs = [...availableSongs, songToMove];
+        }
+    }
     
-    // Lógica local para simulación
-    const newSongIds = [...setlist.songs, songId];
-    const updatedSetlist = { ...setlist, songs: newSongIds };
-    setSetlist(updatedSetlist);
+    setAvailableSongs(updatedAvailableSongs);
+    setSetlistSongs(updatedSetlistSongs);
   };
   
-  const handleRemoveSong = (songId: string) => {
-    if (!setlist) return;
-
-    // Lógica local para simulación
-    const newSongIds = setlist.songs.filter(id => id !== songId);
-    const updatedSetlist = { ...setlist, songs: newSongIds };
-    setSetlist(updatedSetlist);
+  const handleAddSong = async (songId: string) => {
+    if (isLocal) return;
+    try {
+        const setlistRef = doc(db, "setlist", setlistId);
+        await updateDoc(setlistRef, {
+            songs: arrayUnion(songId)
+        });
+        updateSongLists(songId, 'add');
+    } catch(e) {
+        console.error("Error adding song: ", e);
+        setError("No se pudo añadir la canción.");
+    }
+  };
+  
+  const handleRemoveSong = async (songId: string) => {
+    if (isLocal) return;
+    try {
+        const setlistRef = doc(db, "setlist", setlistId);
+        await updateDoc(setlistRef, {
+            songs: arrayRemove(songId)
+        });
+        updateSongLists(songId, 'remove');
+    } catch(e) {
+        console.error("Error removing song: ", e);
+        setError("No se pudo quitar la canción.");
+    }
   };
 
 

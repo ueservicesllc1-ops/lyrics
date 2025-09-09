@@ -63,9 +63,13 @@ export default function SetlistsPage() {
         (doc) => ({ id: doc.id, ...doc.data() } as Setlist)
       );
       setSetlists(setlistsData);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error fetching documents: ', e);
-      setError('No se pudieron cargar los setlists. Es posible que la base de datos no esté configurada correctamente.');
+      if (e.code === 'permission-denied') {
+           setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
+      } else {
+           setError('No se pudieron cargar los setlists.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -90,26 +94,6 @@ export default function SetlistsPage() {
     setError(null);
     setIsLoading(true);
 
-    // SIMULACIÓN LOCAL PARA EVITAR ERROR 400 de Firestore
-    // Esto añade el setlist al estado local para que la UI funcione.
-    // No se guardará permanentemente.
-    const newSetlist: Setlist = {
-      id: `local-${Date.now()}`, // ID temporal
-      name,
-      date: Timestamp.fromDate(date),
-      userId: user.uid,
-      songs: [],
-    };
-
-    setSetlists((prevSetlists) => [...prevSetlists, newSetlist]);
-    
-    setName('');
-    setDate(undefined);
-    setIsLoading(false);
-
-    // El siguiente código es el que se conecta a Firestore, pero está fallando.
-    // Lo dejamos comentado para referencia futura.
-    /*
     try {
       await addDoc(collection(db, 'setlist'), {
         name,
@@ -120,13 +104,16 @@ export default function SetlistsPage() {
       setName('');
       setDate(undefined);
       await fetchSetlists(); // Refresh list
-    } catch (e) {
+    } catch (e: any) {
       console.error('Error adding document: ', e);
-      setError('No se pudo guardar el setlist. Verifica la configuración de Firestore.');
+       if (e.code === 'permission-denied') {
+           setError('No se pudo guardar. Revisa las reglas de seguridad de Firestore.');
+       } else {
+            setError('No se pudo guardar el setlist.');
+       }
     } finally {
       setIsLoading(false);
     }
-    */
   };
 
   return (
