@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Header } from '@/components/header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UserPlus, Music, BarChart2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Users, Upload, Bell } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminPage() {
@@ -29,48 +30,27 @@ export default function AdminPage() {
       <main className="flex-1 p-4 md:p-6">
         <Card>
           <CardHeader>
-            <CardTitle>Admin Panel</CardTitle>
-            <CardDescription>Manage users, songs, and view analytics.</CardDescription>
+            <CardTitle>Panel de Administración</CardTitle>
+            <CardDescription>Selecciona una opción para gestionar la aplicación.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">User Management</CardTitle>
-                  <UserPlus className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+5</div>
-                  <p className="text-xs text-muted-foreground">New users this week</p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">Song Library</CardTitle>
-                  <Music className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">125</div>
-                  <p className="text-xs text-muted-foreground">Total songs in library</p>
-                </CardContent>
-              </Card>
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">Site Analytics</CardTitle>
-                  <BarChart2 className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">+2.1k</div>
-                  <p className="text-xs text-muted-foreground">Setlists created this month</p>
-                </CardContent>
-              </Card>
+            <div className="flex flex-col md:flex-row gap-4">
+              <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
+                <Users className="mr-4 h-6 w-6" />
+                Administrador de Usuarios
+              </Button>
+              <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
+                <Upload className="mr-4 h-6 w-6" />
+                Subir Letras
+              </Button>
+              <Button variant="outline" className="flex-1 justify-start p-6 text-lg">
+                <Bell className="mr-4 h-6 w-6" />
+                Notificaciones
+              </Button>
             </div>
             <div className="mt-6">
-              <p className="text-muted-foreground">
-                This is a placeholder for admin-specific functionality. You can add tables, forms, and charts here to manage your application data.
-              </p>
               <Link href="/" className="text-accent-foreground underline mt-4 inline-block">
-                Return to main app
+                Volver a la aplicación principal
               </Link>
             </div>
           </CardContent>
