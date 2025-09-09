@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2, Rocket } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import Link from 'next/link';
 
 // Interfaces
 interface Song {
@@ -158,18 +159,29 @@ export default function SetlistDetailPage() {
 
   return (
     <main className="container mx-auto p-4">
-      <header className="mb-8">
-         <div className="flex items-center gap-4 mb-2">
+       <header className="mb-8 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
+         <div>
           <h1 className="text-4xl font-bold">{setlist.name}</h1>
+          <p className="text-muted-foreground">{format(setlistDate, 'PPP')}</p>
         </div>
-        <p className="text-muted-foreground">{format(setlistDate, 'PPP')}</p>
+        <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => router.push('/setlists')}>
+                Volver a Setlists
+            </Button>
+            <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
+                <Button disabled={songsInSetlist.length === 0}>
+                    <Rocket className="mr-2 h-4 w-4" />
+                    Iniciar Teleprompter
+                </Button>
+            </Link>
+        </div>
       </header>
       
       <div className="grid gap-12 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Canciones en este Setlist</CardTitle>
-            <CardDescription>Esta es la lista de canciones para el evento.</CardDescription>
+            <CardDescription>Esta es la lista de canciones para el evento. El orden aquí no afecta al teleprompter.</CardDescription>
           </CardHeader>
           <CardContent>
             {songsInSetlist.length > 0 ? (
@@ -221,12 +233,6 @@ export default function SetlistDetailPage() {
               )}
           </CardContent>
         </Card>
-      </div>
-
-      <div className="mt-8">
-        <Button variant="outline" onClick={() => router.push('/setlists')}>
-          Volver a Setlists
-        </Button>
       </div>
     </main>
   );
