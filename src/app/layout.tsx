@@ -5,9 +5,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import AuthStatus from "@/components/AuthStatus";
-import { Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/Logo";
 
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -27,10 +27,7 @@ function Header() {
      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
-            <Home className="h-5 w-5" />
-            <h1 className="text-xl font-bold tracking-wider text-foreground uppercase">
-                SETLIST.IO
-            </h1>
+              <Logo />
             </Link>
             <div className="flex flex-1 items-center justify-end space-x-4">
             <nav className="flex items-center space-x-2">
