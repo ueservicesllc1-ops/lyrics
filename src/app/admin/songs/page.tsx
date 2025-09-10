@@ -134,9 +134,14 @@ export default function SongsPage() {
             Todas las canciones disponibles en el repertorio.
           </p>
         </div>
-        <Link href="/admin">
-          <Button variant="outline">Volver al Panel de Admin</Button>
-        </Link>
+        <div className="flex gap-2">
+            <Link href="/admin">
+                <Button variant="outline">Volver al Panel de Admin</Button>
+            </Link>
+             <Link href="/">
+                <Button variant="outline">Volver al Inicio</Button>
+            </Link>
+        </div>
       </header>
 
       <div className="grid gap-12 md:grid-cols-2">

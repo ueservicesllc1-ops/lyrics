@@ -169,6 +169,9 @@ export default function SetlistDetailPage() {
           <p className="text-muted-foreground">{format(setlistDate, 'PPP')}</p>
         </div>
         <div className="flex items-center gap-2">
+            <Link href="/">
+                <Button variant="outline">Volver al Inicio</Button>
+            </Link>
             <Button variant="outline" onClick={() => router.push('/setlists')}>
                 Volver a Setlists
             </Button>
