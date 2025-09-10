@@ -64,20 +64,24 @@ export default function SetlistsPage() {
     if (!user) return;
     setIsLoading(true);
     try {
+      // Query without server-side ordering to avoid composite index requirement
       const q = query(
         collection(db, 'setlists'),
-        where('userId', '==', user.uid),
-        orderBy('date', 'desc')
+        where('userId', '==', user.uid)
       );
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
         (doc) => ({ id: doc.id, ...doc.data() } as Setlist)
       );
+      
+      // Sort on the client-side
+      setlistsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
       setSetlists(setlistsData);
     } catch (e) {
       console.error('Error fetching documents: ', e);
-       if ((e as any).code === 'permission-denied') {
-        setError('Error de permisos. Asegúrate de que las reglas de seguridad de Firestore estén bien configuradas.');
+       if ((e as any).code === 'permission-denied' || (e as any).code === 'failed-precondition') {
+        setError('Error de permisos o de índice. Asegúrate de que las reglas de seguridad de Firestore y los índices estén bien configurados.');
       } else {
         setError('No se pudieron cargar los setlists.');
       }
