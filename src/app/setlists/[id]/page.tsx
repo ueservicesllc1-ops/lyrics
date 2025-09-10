@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Trash2, Rocket, Search, ChevronRight, GripVertical, ArrowLeft } from 'lucide-react';
+import { AlertTriangle, Trash2, Rocket, Search, ChevronRight, GripVertical, ArrowLeft, Home } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 import { Setlist } from '../page';
@@ -70,13 +70,9 @@ export default function SetlistDetailPage() {
 
       if (setlistData.songs && setlistData.songs.length > 0) {
         const songIds = setlistData.songs;
-        const songsRef = collection(db, 'songs');
-        const q = query(songsRef, where('__name__', 'in', songIds));
-        const songDocsSnapshot = await getDocs(q);
-
         const songsMap = new Map<string, Song>();
-        songDocsSnapshot.forEach(doc => {
-            songsMap.set(doc.id, { id: doc.id, ...doc.data() } as Song);
+        allSongsData.forEach(song => {
+            songsMap.set(song.id, song);
         });
 
         const orderedSongs = songIds
@@ -109,7 +105,7 @@ export default function SetlistDetailPage() {
 
 
   const handleAddSongToSetlist = async (songId: string) => {
-    if (!songId || setlist?.songs?.includes(songId)) return;
+    if (!songId || songsInSetlist.some(s => s.id === songId)) return;
     setError(null);
     try {
       const setlistDocRef = doc(db, 'setlists', setlistId);
@@ -156,20 +152,28 @@ export default function SetlistDetailPage() {
     const newOrder = [...songsInSetlist];
     const draggedIndex = newOrder.findIndex(s => s.id === draggedSong.id);
     
+    if(draggedIndex === -1) {
+        setDraggedSong(null);
+        setDragOverIndex(null);
+        return;
+    }
+    
     const [reorderedSong] = newOrder.splice(draggedIndex, 1);
     
     newOrder.splice(dragOverIndex, 0, reorderedSong);
 
     setSongsInSetlist(newOrder);
+    
+    const newSongIds = newOrder.map(s => s.id);
 
     try {
-        const newSongIds = newOrder.map(s => s.id);
         const setlistDocRef = doc(db, 'setlists', setlistId);
         await updateDoc(setlistDocRef, { songs: newSongIds });
     } catch (e) {
         console.error("Error updating song order: ", e);
         setError("Could not save the new song order.");
-        fetchSetlistAndSongs();
+        // Revert UI change on error
+        await fetchSetlistAndSongs();
     } finally {
         setDraggedSong(null);
         setDragOverIndex(null);
@@ -196,7 +200,7 @@ export default function SetlistDetailPage() {
   };
 
    const filteredAvailableSongs = availableSongs
-    .filter(song => !setlist?.songs?.includes(song.id))
+    .filter(song => !songsInSetlist.some(s => s.id === song.id))
     .filter(song => 
         song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -229,9 +233,16 @@ export default function SetlistDetailPage() {
        {/* Left Panel: Song Library */}
        <div className="w-1/2 md:w-2/5 lg:w-1/3 flex flex-col border-r bg-white">
             <header className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold">Song Library</h1>
-                  <p className="text-sm opacity-80">Drag songs to your setlist</p>
+                <div className='flex items-center gap-2'>
+                    <Link href="/">
+                        <Button variant="ghost" size="icon">
+                            <Home className="h-5 w-5" />
+                        </Button>
+                    </Link>
+                    <div>
+                      <h1 className="text-2xl font-bold">Song Library</h1>
+                      <p className="text-sm opacity-80">Drag songs to your setlist</p>
+                    </div>
                 </div>
                  <Button variant="ghost" size="icon" onClick={() => router.push('/setlists')}>
                     <ArrowLeft className="h-5 w-5" />
@@ -256,7 +267,7 @@ export default function SetlistDetailPage() {
                                 key={song.id}
                                 draggable="true"
                                 onDragStart={(e) => handleLibraryDragStart(e, song.id)}
-                                className="flex items-center justify-between p-3 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
+                                className="flex items-center justify-between p-2 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
                             >
                                 <div>
                                     <p className="font-semibold text-sm">{song.title}</p>
@@ -297,19 +308,21 @@ export default function SetlistDetailPage() {
                 className={`flex-grow p-4 transition-colors duration-200 ${isDraggingOver ? 'bg-secondary' : 'bg-background'}`}
             >
                 <div className={`h-full w-full border-2 border-dashed rounded-lg flex flex-col ${isDraggingOver ? 'border-primary' : 'border-border'}`}>
-                    {songsInSetlist.length > 0 ? (
-                         <ul className="divide-y divide-border w-full">
+                     {songsInSetlist.length > 0 ? (
+                         <ul 
+                            className="divide-y divide-border w-full"
+                            onDragOver={(e) => e.preventDefault()} // Allow dropping over the list itself
+                         >
                             {songsInSetlist.map((song, index) => (
                             <div key={song.id}>
                                 {dragOverIndex === index && draggedSong?.id !== song.id && (
                                     <div className="h-1 bg-accent my-1 rounded-full"/>
                                 )}
                                 <li 
-                                    className={`flex items-center justify-between p-3 rounded-md hover:bg-white/80 cursor-grab active:cursor-grabbing ${draggedSong?.id === song.id ? 'opacity-50' : 'opacity-100'}`}
+                                    className={`flex items-center justify-between p-2 rounded-md hover:bg-white/80 cursor-grab active:cursor-grabbing ${draggedSong?.id === song.id ? 'opacity-50' : 'opacity-100'}`}
                                     draggable="true"
                                     onDragStart={() => handleSetlistDragStart(song)}
                                     onDragEnter={() => handleSetlistDragEnter(index)}
-                                    onDragOver={(e) => e.preventDefault()}
                                     onDragEnd={handleSetlistDragEnd}
                                 >
                                     <div className="flex items-center gap-4">

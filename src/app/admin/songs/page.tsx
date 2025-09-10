@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/table';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { Home } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -139,7 +140,9 @@ export default function SongsPage() {
                 <Button variant="outline">Volver al Panel de Admin</Button>
             </Link>
              <Link href="/">
-                <Button variant="outline">Volver al Dashboard</Button>
+                <Button variant="outline" size="icon">
+                  <Home className="h-4 w-4" />
+                </Button>
             </Link>
         </div>
       </header>
