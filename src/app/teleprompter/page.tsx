@@ -237,9 +237,9 @@ function TeleprompterContent() {
         {lyrics}
       </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-        <div className="max-w-5xl mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg">
-            <div className="flex flex-col gap-4">
+      <footer className="fixed bottom-0 left-0 right-0 z-50 p-2 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+        <div className="max-w-5xl mx-auto bg-black/30 backdrop-blur-sm p-2 rounded-xl border border-white/10 shadow-lg">
+            <div className="flex flex-col gap-2">
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
                     
                     {/* Left Controls */}
@@ -249,9 +249,9 @@ function TeleprompterContent() {
                         variant="outline"
                         size="icon"
                         aria-label="Reset"
-                        className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20"
+                        className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20"
                         >
-                        <RefreshCw className="h-6 w-6" />
+                        <RefreshCw className="h-5 w-5" />
                         </Button>
                     </div>
                     
@@ -260,7 +260,7 @@ function TeleprompterContent() {
                         <Button
                         onClick={isScrolling ? stopScrolling : startScrolling}
                         aria-label={isScrolling ? 'Pause' : 'Play'}
-                        className="w-16 h-16 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                        className="w-14 h-14 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground"
                         >
                         {isScrolling ? (
                             <Pause className="h-8 w-8" />
@@ -271,7 +271,7 @@ function TeleprompterContent() {
                     </div>
 
                     {/* Right Controls */}
-                    <div className="flex-1 flex justify-end items-center gap-6">
+                    <div className="flex-1 flex justify-end items-center gap-4">
                         <div className="flex items-center gap-2">
                            <Button onClick={() => handleFontSizeChange('small')} variant={fontSize === 'text-5xl' ? 'secondary' : 'outline'} size="icon" className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20">
                              <span className='font-bold text-xs'>A</span>
@@ -283,8 +283,8 @@ function TeleprompterContent() {
                              <span className='font-bold text-base'>A</span>
                            </Button>
                         </div>
-                        <div className="flex items-center gap-2 w-full max-w-xs">
-                            <Label htmlFor="speed" className='shrink-0'>Velocidad</Label>
+                        <div className="flex items-center gap-2 w-full max-w-[180px]">
+                            <Label htmlFor="speed" className='shrink-0 text-xs'>Velocidad</Label>
                             <Slider
                             id="speed"
                             min={1}
@@ -301,7 +301,7 @@ function TeleprompterContent() {
                             checked={isMirrored}
                             onCheckedChange={setIsMirrored}
                             />
-                            <Label htmlFor="mirror-mode">Espejo</Label>
+                            <Label htmlFor="mirror-mode" className='text-xs'>Espejo</Label>
                         </div>
                     </div>
                 </div>
@@ -313,7 +313,7 @@ function TeleprompterContent() {
                             <CarouselItem key={song.id} className="basis-1/3 md:basis-1/4 lg:basis-1/5">
                                 <Button
                                 variant={index === currentSongIndex ? 'secondary' : 'outline'}
-                                className={`w-full truncate h-12 text-xs md:text-sm ${index === currentSongIndex ? 'bg-accent text-accent-foreground border-accent' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
+                                className={`w-full truncate h-10 text-xs ${index === currentSongIndex ? 'bg-accent text-accent-foreground border-accent' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
                                 onClick={() => handleCarouselSelect(index)}
                                 >
                                 {song.title}
