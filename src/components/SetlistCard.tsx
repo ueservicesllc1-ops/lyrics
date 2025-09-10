@@ -1,40 +1,29 @@
 'use client';
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Setlist } from '@/app/setlists/page';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
+import { ChevronRight } from 'lucide-react';
 
 interface SetlistCardProps {
   setlist: Setlist;
 }
 
 export default function SetlistCard({ setlist }: SetlistCardProps) {
-  // Firestore puede devolver Timestamp o un string si lo guardamos así.
   const date = typeof setlist.date === 'string' 
     ? parseISO(setlist.date) 
     : (setlist.date as any).toDate();
     
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="min-w-0 break-words">{setlist.name}</CardTitle>
-        <CardDescription>{format(date, 'PPP')}</CardDescription>
-      </CardHeader>
-      <CardFooter>
-        <Link href={`/setlists/${setlist.id}`}>
-          <Button variant="outline" size="sm">
-            Ver Detalles
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
+    <Link href={`/setlists/${setlist.id}`} className="block">
+      <div className="w-full text-left justify-between hover:bg-neutral-700/50 p-4 rounded-lg flex items-center transition-colors duration-200 border border-neutral-700">
+        <div>
+          <p className="font-semibold text-white">{setlist.name}</p>
+          <p className="text-sm text-muted-foreground">{format(date, 'PPP')}</p>
+        </div>
+        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+      </div>
+    </Link>
   );
 }
