@@ -214,7 +214,7 @@ function TeleprompterContent() {
         <CardContent>
           <div
             ref={contentRef}
-            className={`h-[60vh] overflow-y-scroll bg-neutral-900 text-white p-8 text-4xl leading-relaxed font-sans border rounded-md whitespace-pre-wrap transition-transform duration-300 ${
+            className={`h-[60vh] overflow-y-scroll bg-neutral-900 text-white p-8 text-4xl leading-relaxed font-sans border rounded-md whitespace-pre-wrap transition-transform duration-300 text-center ${
               isMirrored ? 'scale-x-[-1]' : ''
             }`}
           >
