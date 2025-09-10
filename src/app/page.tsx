@@ -28,10 +28,25 @@ import {
   query,
   where,
   orderBy,
+  doc,
+  updateDoc,
+  arrayUnion,
 } from 'firebase/firestore';
 import SetlistCard from '@/components/SetlistCard';
 import type { Setlist } from '@/app/setlists/page';
-import { Search } from 'lucide-react';
+import { Search, PlusCircle, CheckCircle } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+} from '@/components/ui/dropdown-menu';
 
 interface Song {
   id: string;
@@ -49,6 +64,8 @@ export default function DashboardPage() {
 
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [isLoadingSetlists, setIsLoadingSetlists] = useState(true);
+
+  const [feedback, setFeedback] = useState<{ songId: string; message: string } | null>(null);
 
   const fetchSongs = useCallback(async () => {
     setIsLoadingSongs(true);
@@ -97,6 +114,23 @@ export default function DashboardPage() {
     }
   }, [user, loading, router, fetchSongs, fetchSetlists]);
 
+  const handleAddSongToSetlist = async (songId: string, setlistId: string) => {
+    try {
+      const setlistRef = doc(db, 'setlists', setlistId);
+      await updateDoc(setlistRef, {
+        songs: arrayUnion(songId),
+      });
+      setFeedback({ songId, message: '¡Añadida!' });
+      setTimeout(() => setFeedback(null), 2000); // Reset feedback after 2s
+      fetchSetlists(); // Refresh setlist data to update song counts
+    } catch (error) {
+      console.error('Error adding song to setlist:', error);
+      setFeedback({ songId, message: 'Error' });
+      setTimeout(() => setFeedback(null), 2000);
+    }
+  };
+
+
   if (loading || !user) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -140,6 +174,7 @@ export default function DashboardPage() {
                       <TableRow className="border-b-border/60 hover:bg-transparent">
                         <TableHead>Título</TableHead>
                         <TableHead>Artista</TableHead>
+                        <TableHead className='text-right'>Acción</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -149,6 +184,42 @@ export default function DashboardPage() {
                             {song.title}
                           </TableCell>
                           <TableCell>{song.artist || 'N/A'}</TableCell>
+                          <TableCell className="text-right">
+                             {feedback?.songId === song.id ? (
+                                <div className='flex items-center justify-end gap-2 text-green-500'>
+                                    <CheckCircle className="h-4 w-4" />
+                                    <span className="text-sm font-medium">{feedback.message}</span>
+                                </div>
+                            ) : (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className='h-8 w-8'>
+                                        <PlusCircle className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Añadir a Setlist</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {isLoadingSetlists ? (
+                                        <DropdownMenuItem disabled>Cargando...</DropdownMenuItem>
+                                    ) : setlists.length > 0 ? (
+                                        setlists.map((setlist) => (
+                                            <DropdownMenuItem 
+                                                key={setlist.id} 
+                                                onClick={() => handleAddSongToSetlist(song.id, setlist.id)}
+                                                disabled={setlist.songs?.includes(song.id)}
+                                            >
+                                                {setlist.name}
+                                                {setlist.songs?.includes(song.id) && <CheckCircle className="h-4 w-4 ml-auto text-green-500"/>}
+                                            </DropdownMenuItem>
+                                        ))
+                                    ) : (
+                                        <DropdownMenuItem disabled>No hay setlists</DropdownMenuItem>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            )}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
