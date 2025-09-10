@@ -227,27 +227,6 @@ function TeleprompterContent() {
       <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
         <div className="max-w-4xl mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg">
             <div className="flex flex-col gap-4">
-                 {songs.length > 0 && (
-                <div className='w-full'>
-                    <Carousel setApi={setCarouselApi} opts={{align: "start"}} className="w-full">
-                        <CarouselContent>
-                            {songs.map((song, index) => (
-                            <CarouselItem key={song.id} className="basis-1/3 md:basis-1/4 lg:basis-1/5">
-                                <Button
-                                variant={index === currentSongIndex ? 'secondary' : 'outline'}
-                                className={`w-full truncate h-12 text-xs md:text-sm ${index === currentSongIndex ? 'bg-accent text-accent-foreground border-accent' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
-                                onClick={() => handleCarouselSelect(index)}
-                                >
-                                {song.title}
-                                </Button>
-                            </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                        <CarouselPrevious className='-left-4 text-white bg-white/10 hover:bg-white/20 border-none' />
-                        <CarouselNext className='-right-4 text-white bg-white/10 hover:bg-white/20 border-none'/>
-                    </Carousel>
-                </div>
-                )}
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-4">
                         <Button
@@ -293,6 +272,27 @@ function TeleprompterContent() {
                         <Label htmlFor="mirror-mode">Modo Espejo</Label>
                     </div>
                 </div>
+                 {songs.length > 0 && (
+                <div className='w-full'>
+                    <Carousel setApi={setCarouselApi} opts={{align: "start"}} className="w-full">
+                        <CarouselContent>
+                            {songs.map((song, index) => (
+                            <CarouselItem key={song.id} className="basis-1/3 md:basis-1/4 lg:basis-1/5">
+                                <Button
+                                variant={index === currentSongIndex ? 'secondary' : 'outline'}
+                                className={`w-full truncate h-12 text-xs md:text-sm ${index === currentSongIndex ? 'bg-accent text-accent-foreground border-accent' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
+                                onClick={() => handleCarouselSelect(index)}
+                                >
+                                {song.title}
+                                </Button>
+                            </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className='-left-4 text-white bg-white/10 hover:bg-white/20 border-none' />
+                        <CarouselNext className='-right-4 text-white bg-white/10 hover:bg-white/20 border-none'/>
+                    </Carousel>
+                </div>
+                )}
             </div>
         </div>
       </footer>
