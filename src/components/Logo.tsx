@@ -4,13 +4,13 @@ import Image from 'next/image';
 const Logo = () => {
   return (
     <div className="flex items-center">
-       {/* 
-        PASO FINAL PARA TI:
-        1. Guarda tu archivo "logo.png" en la carpeta `public` que está en la raíz de tu proyecto.
-        2. Reemplaza el `src` de abajo con la ruta a tu logo, por ejemplo: `src="/logo.png"`.
+      {/* 
+        ¡LISTO!
+        Solo tienes que guardar tu archivo "logo.png" en la carpeta `public` 
+        que está en la raíz de tu proyecto. El código ya está preparado.
       */}
       <Image
-        src="https://placehold.co/150x40/1e1b4b/ffffff?text=My+SetList" // <-- REEMPLAZA ESTA URL
+        src="/logo.png" // <-- ¡Ya está apuntando a tu logo local!
         alt="My SetList Logo"
         width={150}
         height={40}
