@@ -7,9 +7,10 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Trash2, Rocket } from 'lucide-react';
+import { AlertTriangle, Trash2, Rocket, PlusCircle } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 
@@ -39,7 +40,7 @@ export default function SetlistDetailPage() {
   const [setlist, setSetlist] = useState<Setlist | null>(null);
   const [songsInSetlist, setSongsInSetlist] = useState<Song[]>([]);
   const [availableSongs, setAvailableSongs] = useState<Song[]>([]);
-  const [selectedSong, setSelectedSong] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,15 +105,14 @@ export default function SetlistDetailPage() {
   }, [user, authLoading, fetchSetlistAndSongs, router]);
 
 
-  const handleAddSongToSetlist = async () => {
-    if (!selectedSong) return;
+  const handleAddSongToSetlist = async (songId: string) => {
+    if (!songId) return;
     setError(null);
     try {
       const setlistDocRef = doc(db, 'setlists', setlistId);
       await updateDoc(setlistDocRef, {
-        songs: arrayUnion(selectedSong)
+        songs: arrayUnion(songId)
       });
-      setSelectedSong('');
       await fetchSetlistAndSongs(); // Refresh data
     } catch (e: any) {
        console.error("Error adding song: ", e);
@@ -161,6 +161,13 @@ export default function SetlistDetailPage() {
     ? parseISO(setlist.date)
     : setlist.date.toDate();
 
+   const filteredAvailableSongs = availableSongs
+    .filter(song => !setlist?.songs?.includes(song.id))
+    .filter(song => 
+        song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
   return (
     <main className="container mx-auto p-4">
        <header className="mb-8 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
@@ -182,10 +189,11 @@ export default function SetlistDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle>Canciones en este Setlist</CardTitle>
-            <CardDescription>Esta es la lista de canciones para el evento. El orden aquí no afecta al teleprompter.</CardDescription>
+            <CardDescription>Esta es la lista de canciones para el evento.</CardDescription>
           </CardHeader>
           <CardContent>
             {songsInSetlist.length > 0 ? (
+              <div className="max-h-96 overflow-y-auto">
               <ul className="space-y-2">
                 {songsInSetlist.map(song => (
                   <li key={song.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
@@ -196,6 +204,7 @@ export default function SetlistDetailPage() {
                   </li>
                 ))}
               </ul>
+              </div>
             ) : (
               <p className="text-muted-foreground text-center py-4">Aún no hay canciones en este setlist.</p>
             )}
@@ -204,34 +213,46 @@ export default function SetlistDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Añadir Canción al Setlist</CardTitle>
-            <CardDescription>Selecciona una canción de la biblioteca.</CardDescription>
+            <CardTitle>Añadir Canción desde la Biblioteca</CardTitle>
+            <Input 
+                placeholder="Buscar por título o artista..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mt-2"
+            />
           </CardHeader>
           <CardContent className="space-y-4">
-            <Select onValueChange={setSelectedSong} value={selectedSong}>
-              <SelectTrigger>
-                <SelectValue placeholder="Elige una canción..." />
-              </SelectTrigger>
-              <SelectContent>
-                {availableSongs.length > 0 ? availableSongs
-                    .filter(song => !setlist?.songs?.includes(song.id))
-                    .map(song => (
-                      <SelectItem key={song.id} value={song.id}>
-                        {song.title}
-                      </SelectItem>
-                    ))
-                : <p className="p-4 text-sm text-muted-foreground">No hay más canciones disponibles.</p>}
-              </SelectContent>
-            </Select>
-            <Button onClick={handleAddSongToSetlist} disabled={!selectedSong}>
-              Añadir Canción
-            </Button>
-             {error && (
+            {error && (
                 <Alert variant="destructive" className="mt-4">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
                 </Alert>
-              )}
+            )}
+            <div className="max-h-80 overflow-y-auto">
+                <Table>
+                    <TableBody>
+                        {filteredAvailableSongs.length > 0 ? (
+                            filteredAvailableSongs.map(song => (
+                                <TableRow key={song.id}>
+                                    <TableCell className="font-medium">{song.title}</TableCell>
+                                    <TableCell>{song.artist || 'N/A'}</TableCell>
+                                    <TableCell className="text-right">
+                                        <Button variant="ghost" size="icon" onClick={() => handleAddSongToSetlist(song.id)}>
+                                            <PlusCircle className="h-5 w-5 text-green-600" />
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                           <TableRow>
+                               <TableCell colSpan={3} className="text-center text-muted-foreground">
+                                   {availableSongs.length > 0 ? "No se encontraron canciones." : "La biblioteca está vacía."}
+                                </TableCell>
+                           </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
