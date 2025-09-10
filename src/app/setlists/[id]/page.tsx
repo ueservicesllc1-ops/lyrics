@@ -68,33 +68,26 @@ export default function SetlistDetailPage() {
       
       setAvailableSongs(allSongsData);
 
-      // --- INICIO DE LA CORRECCIÓN ---
-      // Asegurar que el orden de las canciones se preserve
       if (setlistData.songs && setlistData.songs.length > 0) {
         const songIds = setlistData.songs;
-        // Obtenemos todas las canciones de la BD que están en la lista de IDs.
         const songsRef = collection(db, 'songs');
         const q = query(songsRef, where('__name__', 'in', songIds));
         const songDocsSnapshot = await getDocs(q);
 
-        // Creamos un mapa para acceder fácilmente a los datos de cada canción por su ID.
         const songsMap = new Map<string, Song>();
         songDocsSnapshot.forEach(doc => {
             songsMap.set(doc.id, { id: doc.id, ...doc.data() } as Song);
         });
 
-        // Mapeamos el array ordenado de IDs del setlist a los datos completos de las canciones.
-        // Esto garantiza que el orden se mantenga.
         const orderedSongs = songIds
             .map(id => songsMap.get(id))
-            .filter((song): song is Song => !!song); // Filtramos por si alguna canción fue eliminada
+            .filter((song): song is Song => !!song); 
 
         setSongsInSetlist(orderedSongs);
 
       } else {
         setSongsInSetlist([]);
       }
-      // --- FIN DE LA CORRECCIÓN ---
 
     } catch (e: any) {
       console.error("Error fetching data: ", e);
@@ -163,16 +156,12 @@ export default function SetlistDetailPage() {
     const newOrder = [...songsInSetlist];
     const draggedIndex = newOrder.findIndex(s => s.id === draggedSong.id);
     
-    // Remove the dragged song from its original position
     const [reorderedSong] = newOrder.splice(draggedIndex, 1);
     
-    // Insert it at the new position
     newOrder.splice(dragOverIndex, 0, reorderedSong);
 
-    // Update local state immediately for better UX
     setSongsInSetlist(newOrder);
 
-    // Update Firestore with the new array of song IDs
     try {
         const newSongIds = newOrder.map(s => s.id);
         const setlistDocRef = doc(db, 'setlists', setlistId);
@@ -180,7 +169,6 @@ export default function SetlistDetailPage() {
     } catch (e) {
         console.error("Error updating song order: ", e);
         setError("Could not save the new song order.");
-        // Optionally revert state if DB update fails
         fetchSetlistAndSongs();
     } finally {
         setDraggedSong(null);
@@ -268,7 +256,7 @@ export default function SetlistDetailPage() {
                                 key={song.id}
                                 draggable="true"
                                 onDragStart={(e) => handleLibraryDragStart(e, song.id)}
-                                className="flex items-center justify-between p-2 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
+                                className="flex items-center justify-between p-3 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
                             >
                                 <div>
                                     <p className="font-semibold text-sm">{song.title}</p>
@@ -308,16 +296,16 @@ export default function SetlistDetailPage() {
                 onDragLeave={handleDragLeave}
                 className={`flex-grow p-4 transition-colors duration-200 ${isDraggingOver ? 'bg-secondary' : 'bg-background'}`}
             >
-                <div className={`h-full w-full border-2 border-dashed rounded-lg flex items-center justify-center ${isDraggingOver ? 'border-primary' : 'border-border'}`}>
+                <div className={`h-full w-full border-2 border-dashed rounded-lg flex flex-col ${isDraggingOver ? 'border-primary' : 'border-border'}`}>
                     {songsInSetlist.length > 0 ? (
-                         <ul className="divide-y p-2 w-full">
+                         <ul className="divide-y divide-border w-full">
                             {songsInSetlist.map((song, index) => (
                             <div key={song.id}>
-                                {dragOverIndex === index && (
+                                {dragOverIndex === index && draggedSong?.id !== song.id && (
                                     <div className="h-1 bg-accent my-1 rounded-full"/>
                                 )}
                                 <li 
-                                    className="flex items-center justify-between p-2 rounded-md hover:bg-white cursor-grab active:cursor-grabbing"
+                                    className={`flex items-center justify-between p-3 rounded-md hover:bg-white/80 cursor-grab active:cursor-grabbing ${draggedSong?.id === song.id ? 'opacity-50' : 'opacity-100'}`}
                                     draggable="true"
                                     onDragStart={() => handleSetlistDragStart(song)}
                                     onDragEnter={() => handleSetlistDragEnter(index)}
@@ -342,7 +330,7 @@ export default function SetlistDetailPage() {
                             ))}
                         </ul>
                     ) : (
-                        <div className="text-center">
+                        <div className="m-auto text-center">
                             <p className="text-muted-foreground font-semibold">
                                 Drag songs here
                             </p>
@@ -357,5 +345,3 @@ export default function SetlistDetailPage() {
     </main>
   );
 }
-
-    
