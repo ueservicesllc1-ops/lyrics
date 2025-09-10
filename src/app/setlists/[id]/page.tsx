@@ -38,6 +38,11 @@ export default function SetlistDetailPage() {
   
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
+  // Estados para reordenar
+  const [draggedSong, setDraggedSong] = useState<Song | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+
   const fetchSetlistAndSongs = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
@@ -133,9 +138,50 @@ export default function SetlistDetailPage() {
     }
   };
 
-  const handleDragStart = (e: DragEvent<HTMLLIElement>, songId: string) => {
+  const handleLibraryDragStart = (e: DragEvent<HTMLLIElement>, songId: string) => {
     e.dataTransfer.setData('songId', songId);
   };
+
+  const handleSetlistDragStart = (song: Song) => {
+    setDraggedSong(song);
+  };
+
+  const handleSetlistDragEnter = (index: number) => {
+    if (!draggedSong) return;
+    setDragOverIndex(index);
+  };
+
+  const handleSetlistDragEnd = async () => {
+    if (!draggedSong || dragOverIndex === null) return;
+    
+    const newOrder = [...songsInSetlist];
+    const draggedIndex = newOrder.findIndex(s => s.id === draggedSong.id);
+    
+    // Remove the dragged song from its original position
+    const [reorderedSong] = newOrder.splice(draggedIndex, 1);
+    
+    // Insert it at the new position
+    newOrder.splice(dragOverIndex, 0, reorderedSong);
+
+    // Update local state immediately for better UX
+    setSongsInSetlist(newOrder);
+
+    // Update Firestore with the new array of song IDs
+    try {
+        const newSongIds = newOrder.map(s => s.id);
+        const setlistDocRef = doc(db, 'setlists', setlistId);
+        await updateDoc(setlistDocRef, { songs: newSongIds });
+    } catch (e) {
+        console.error("Error updating song order: ", e);
+        setError("Could not save the new song order.");
+        // Optionally revert state if DB update fails
+        fetchSetlistAndSongs();
+    } finally {
+        setDraggedSong(null);
+        setDragOverIndex(null);
+    }
+  };
+
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -146,7 +192,7 @@ export default function SetlistDetailPage() {
     setIsDraggingOver(false);
   };
 
-  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+  const handleDropOnSetlistArea = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDraggingOver(false);
     const songId = e.dataTransfer.getData('songId');
@@ -215,7 +261,7 @@ export default function SetlistDetailPage() {
                             <li 
                                 key={song.id}
                                 draggable="true"
-                                onDragStart={(e) => handleDragStart(e, song.id)}
+                                onDragStart={(e) => handleLibraryDragStart(e, song.id)}
                                 className="flex items-center justify-between p-4 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
                             >
                                 <div>
@@ -248,14 +294,11 @@ export default function SetlistDetailPage() {
                             Start
                         </Button>
                     </Link>
-                     <Button variant="ghost" size="icon">
-                        <GripVertical className="h-5 w-5" />
-                    </Button>
                 </div>
             </header>
              <div 
                 onDragOver={handleDragOver}
-                onDrop={handleDrop}
+                onDrop={handleDropOnSetlistArea}
                 onDragLeave={handleDragLeave}
                 className={`flex-grow p-4 transition-colors duration-200 ${isDraggingOver ? 'bg-secondary' : 'bg-background'}`}
             >
@@ -263,20 +306,33 @@ export default function SetlistDetailPage() {
                     {songsInSetlist.length > 0 ? (
                          <ul className="divide-y p-2 w-full">
                             {songsInSetlist.map((song, index) => (
-                            <li key={song.id} className="flex items-center justify-between p-3 rounded-md hover:bg-white">
-                                <div className="flex items-center gap-4">
-                                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-sm font-bold">
-                                        {index + 1}
-                                    </span>
-                                    <div>
-                                        <p className="font-semibold text-sm">{song.title}</p>
-                                        <p className="text-xs text-muted-foreground">{song.artist || 'N/A'}</p>
+                            <div key={song.id}>
+                                {dragOverIndex === index && (
+                                    <div className="h-1 bg-accent my-1 rounded-full"/>
+                                )}
+                                <li 
+                                    className="flex items-center justify-between p-3 rounded-md hover:bg-white cursor-grab active:cursor-grabbing"
+                                    draggable="true"
+                                    onDragStart={() => handleSetlistDragStart(song)}
+                                    onDragEnter={() => handleSetlistDragEnter(index)}
+                                    onDragOver={(e) => e.preventDefault()}
+                                    onDragEnd={handleSetlistDragEnd}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <GripVertical className="h-5 w-5 text-muted-foreground/50"/>
+                                        <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-sm font-bold">
+                                            {index + 1}
+                                        </span>
+                                        <div>
+                                            <p className="font-semibold text-sm">{song.title}</p>
+                                            <p className="text-xs text-muted-foreground">{song.artist || 'N/A'}</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => handleRemoveSongFromSetlist(song.id)}>
-                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                </Button>
-                            </li>
+                                    <Button variant="ghost" size="icon" onClick={() => handleRemoveSongFromSetlist(song.id)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </li>
+                            </div>
                             ))}
                         </ul>
                     ) : (
