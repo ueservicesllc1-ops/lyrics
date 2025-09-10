@@ -260,12 +260,12 @@ function TeleprompterContent() {
                         <Button
                         onClick={isScrolling ? stopScrolling : startScrolling}
                         aria-label={isScrolling ? 'Pause' : 'Play'}
-                        className="w-14 h-14 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                        className="w-12 h-12 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground"
                         >
                         {isScrolling ? (
-                            <Pause className="h-8 w-8" />
+                            <Pause className="h-6 w-6" />
                         ) : (
-                            <Play className="h-8 w-8 ml-1" />
+                            <Play className="h-6 w-6 ml-1" />
                         )}
                         </Button>
                     </div>
@@ -273,13 +273,13 @@ function TeleprompterContent() {
                     {/* Right Controls */}
                     <div className="flex-1 flex justify-end items-center gap-4">
                         <div className="flex items-center gap-2">
-                           <Button onClick={() => handleFontSizeChange('small')} variant={fontSize === 'text-5xl' ? 'secondary' : 'outline'} size="icon" className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                           <Button onClick={() => handleFontSizeChange('small')} variant="outline" size="icon" className={cn('h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20', { 'bg-accent hover:bg-accent/90 text-accent-foreground border-accent': fontSize === 'text-5xl'})}>
                              <span className='font-bold text-xs'>A</span>
                            </Button>
-                           <Button onClick={() => handleFontSizeChange('medium')} variant={fontSize === 'text-6xl' ? 'secondary' : 'outline'} size="icon" className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                           <Button onClick={() => handleFontSizeChange('medium')} variant="outline" size="icon" className={cn('h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20', { 'bg-accent hover:bg-accent/90 text-accent-foreground border-accent': fontSize === 'text-6xl'})}>
                              <span className='font-bold text-sm'>A</span>
                            </Button>
-                           <Button onClick={() => handleFontSizeChange('large')} variant={fontSize === 'text-7xl' ? 'secondary' : 'outline'} size="icon" className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                           <Button onClick={() => handleFontSizeChange('large')} variant="outline" size="icon" className={cn('h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20', { 'bg-accent hover:bg-accent/90 text-accent-foreground border-accent': fontSize === 'text-7xl'})}>
                              <span className='font-bold text-base'>A</span>
                            </Button>
                         </div>
@@ -312,8 +312,8 @@ function TeleprompterContent() {
                             {songs.map((song, index) => (
                             <CarouselItem key={song.id} className="basis-1/3 md:basis-1/4 lg:basis-1/5">
                                 <Button
-                                variant={index === currentSongIndex ? 'secondary' : 'outline'}
-                                className={`w-full truncate h-10 text-xs ${index === currentSongIndex ? 'bg-accent text-accent-foreground border-accent' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
+                                variant="outline"
+                                className={cn('w-full truncate h-9 text-xs bg-white/10 border-white/20 text-white hover:bg-white/20', { 'bg-accent text-accent-foreground border-accent hover:bg-accent/90': index === currentSongIndex })}
                                 onClick={() => handleCarouselSelect(index)}
                                 >
                                 {song.title}
