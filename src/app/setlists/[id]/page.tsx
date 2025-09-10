@@ -268,7 +268,7 @@ export default function SetlistDetailPage() {
                                 key={song.id}
                                 draggable="true"
                                 onDragStart={(e) => handleLibraryDragStart(e, song.id)}
-                                className="flex items-center justify-between p-4 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
+                                className="flex items-center justify-between p-2 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
                             >
                                 <div>
                                     <p className="font-semibold text-sm">{song.title}</p>
@@ -317,7 +317,7 @@ export default function SetlistDetailPage() {
                                     <div className="h-1 bg-accent my-1 rounded-full"/>
                                 )}
                                 <li 
-                                    className="flex items-center justify-between p-3 rounded-md hover:bg-white cursor-grab active:cursor-grabbing"
+                                    className="flex items-center justify-between p-2 rounded-md hover:bg-white cursor-grab active:cursor-grabbing"
                                     draggable="true"
                                     onDragStart={() => handleSetlistDragStart(song)}
                                     onDragEnter={() => handleSetlistDragEnter(index)}
@@ -357,3 +357,5 @@ export default function SetlistDetailPage() {
     </main>
   );
 }
+
+    
