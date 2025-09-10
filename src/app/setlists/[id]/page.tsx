@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, DragEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -68,27 +68,33 @@ export default function SetlistDetailPage() {
       
       setAvailableSongs(allSongsData);
 
+      // --- INICIO DE LA CORRECCIÓN ---
+      // Asegurar que el orden de las canciones se preserve
       if (setlistData.songs && setlistData.songs.length > 0) {
-        const songDetailsPromises = setlistData.songs.map(songId => getDoc(doc(db, 'songs', songId)));
-        const songDetailsDocs = await Promise.all(songDetailsPromises);
-        
-        const songsInSetlistMap = new Map<string, Song>();
-        songDetailsDocs.forEach(doc => {
-            if (doc.exists()) {
-                const song = { id: doc.id, ...doc.data() } as Song;
-                songsInSetlistMap.set(song.id, song);
-            }
+        const songIds = setlistData.songs;
+        // Obtenemos todas las canciones de la BD que están en la lista de IDs.
+        const songsRef = collection(db, 'songs');
+        const q = query(songsRef, where('__name__', 'in', songIds));
+        const songDocsSnapshot = await getDocs(q);
+
+        // Creamos un mapa para acceder fácilmente a los datos de cada canción por su ID.
+        const songsMap = new Map<string, Song>();
+        songDocsSnapshot.forEach(doc => {
+            songsMap.set(doc.id, { id: doc.id, ...doc.data() } as Song);
         });
-        
-        const orderedSongs = setlistData.songs
-            .map(songId => songsInSetlistMap.get(songId))
-            .filter((song): song is Song => !!song);
-            
+
+        // Mapeamos el array ordenado de IDs del setlist a los datos completos de las canciones.
+        // Esto garantiza que el orden se mantenga.
+        const orderedSongs = songIds
+            .map(id => songsMap.get(id))
+            .filter((song): song is Song => !!song); // Filtramos por si alguna canción fue eliminada
+
         setSongsInSetlist(orderedSongs);
 
       } else {
         setSongsInSetlist([]);
       }
+      // --- FIN DE LA CORRECCIÓN ---
 
     } catch (e: any) {
       console.error("Error fetching data: ", e);
