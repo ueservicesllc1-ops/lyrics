@@ -198,11 +198,11 @@ function TeleprompterContent() {
 
   return (
     <div className="container mx-auto p-4 flex flex-col items-center gap-8">
-      <Card className="w-full max-w-5xl glassmorphism">
+      <Card className="w-full max-w-5xl">
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="glow-primary-text">{setlistName}</CardTitle>
+              <CardTitle>{setlistName}</CardTitle>
               <CardDescription>
                 En reproducción: {songs[currentSongIndex]?.title || 'Setlist cargado'}
               </CardDescription>
@@ -216,10 +216,9 @@ function TeleprompterContent() {
         <CardContent>
           <div
             ref={contentRef}
-            className={`h-[60vh] overflow-y-scroll bg-neutral-900/80 text-white p-8 text-5xl leading-relaxed font-sans border rounded-md whitespace-pre-wrap transition-transform duration-300 text-center ${
+            className={`h-[60vh] overflow-y-scroll bg-neutral-900 text-white p-8 text-5xl leading-relaxed font-sans border rounded-md whitespace-pre-wrap transition-transform duration-300 text-center ${
               isMirrored ? 'scale-x-[-1]' : ''
             }`}
-            style={{ textShadow: '0 0 10px rgba(255, 255, 255, 0.7)'}}
           >
             {lyrics}
           </div>

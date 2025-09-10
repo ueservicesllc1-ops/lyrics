@@ -139,7 +139,7 @@ export default function SongsPage() {
                 <Button variant="outline">Volver al Panel de Admin</Button>
             </Link>
              <Link href="/">
-                <Button variant="outline">Volver al Inicio</Button>
+                <Button variant="outline">Volver al Dashboard</Button>
             </Link>
         </div>
       </header>

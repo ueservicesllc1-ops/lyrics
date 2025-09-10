@@ -54,7 +54,7 @@ export default function AuthStatus() {
                     </DropdownMenuItem>
                   </Link>
                 )}
-                <DropdownMenuItem onClick={() => auth.signOut()} className="text-red-400 focus:text-red-400 focus:bg-red-500/10 cursor-pointer">
+                <DropdownMenuItem onClick={() => auth.signOut()} className="cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Cerrar Sesión</span>
                 </DropdownMenuItem>
@@ -65,7 +65,7 @@ export default function AuthStatus() {
 
   return (
     <Link href="/login">
-      <Button variant="secondary" className="glow-primary-box h-9 px-4 rounded-md font-semibold">
+      <Button variant="secondary" className="h-9 px-4 rounded-md font-semibold">
         Iniciar Sesión
       </Button>
     </Link>

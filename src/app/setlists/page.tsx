@@ -134,7 +134,7 @@ export default function SetlistsPage() {
     <main className="container mx-auto p-4">
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold glow-primary-text">Mis Setlists</h1>
+          <h1 className="text-4xl font-bold">Mis Setlists</h1>
           <p className="text-muted-foreground">
             Crea y organiza tus setlists para los eventos.
           </p>
@@ -142,12 +142,12 @@ export default function SetlistsPage() {
         <div className="flex items-center gap-4">
            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="glow-primary-box">
+              <Button>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Crear Nuevo Setlist
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md glassmorphism">
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Crear Nuevo Setlist</DialogTitle>
                 <DialogDescription>
@@ -208,7 +208,7 @@ export default function SetlistsPage() {
                   )}
                 </div>
                 <DialogFooter>
-                  <Button type="submit" disabled={isLoading} className="glow-primary-box">
+                  <Button type="submit" disabled={isLoading}>
                     {isLoading ? 'Creando...' : 'Crear Setlist'}
                   </Button>
                 </DialogFooter>
@@ -216,13 +216,13 @@ export default function SetlistsPage() {
             </DialogContent>
           </Dialog>
           <Link href="/">
-            <Button variant="outline">Volver al Inicio</Button>
+            <Button variant="outline">Volver al Dashboard</Button>
           </Link>
         </div>
       </header>
 
       <div>
-        <Card className="glassmorphism">
+        <Card>
           <CardHeader>
             <CardTitle>Próximos Eventos</CardTitle>
             <CardDescription>

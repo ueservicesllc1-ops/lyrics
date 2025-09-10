@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Orbitron } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import AuthStatus from "@/components/AuthStatus";
-import { Church } from "lucide-react";
+import { Home } from "lucide-react";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const orbitron = Orbitron({ subsets: ["latin"], weight: "700", variable: "--font-orbitron" });
 
 export const metadata: Metadata = {
   title: "My Setlist App",
@@ -20,17 +20,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.variable} ${orbitron.variable} font-sans`}>
+      <body className={`${inter.variable} font-sans`}>
         <AuthProvider>
           <div className="min-h-screen flex flex-col">
             <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <div className="container flex h-20 items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Church className="h-6 w-6 text-primary glow-primary-text" />
-                  <h1 className="text-2xl font-bold tracking-wider text-white font-display uppercase glow-primary-text" style={{ fontFamily: "var(--font-orbitron)" }}>
+              <div className="container flex h-14 items-center justify-between">
+                <Link href="/" className="flex items-center gap-2">
+                  <Home className="h-5 w-5" />
+                  <h1 className="text-xl font-bold tracking-wider text-white uppercase">
                     SETLIST.IO
                   </h1>
-                </div>
+                </Link>
                 <div className="flex flex-1 items-center justify-end space-x-4">
                   <nav className="flex items-center space-x-2">
                     <AuthStatus />

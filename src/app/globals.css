@@ -4,16 +4,16 @@
 
 @layer base {
   :root {
-    --background: 220 13% 10%; /* Un negro más profundo */
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 220 13% 14%; /* Tarjetas ligeramente más oscuras */
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 224 71% 4%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 188 100% 70%; /* Cian brillante */
+    --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -22,30 +22,30 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 27.5%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 27.5%;
-    --input: 217.2 32.6% 27.5%;
-    --ring: 188 100% 70%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 210 40% 98%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 220 13% 10%;
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 220 13% 14%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 224 71% 4%;
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 188 100% 70%;
+    --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -54,15 +54,15 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 27.5%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 27.5%;
-    --input: 217.2 32.6% 27.5%;
-    --ring: 188 100% 70%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 210 40% 98%;
   }
 }
 
@@ -75,23 +75,5 @@
     color: hsl(var(--foreground));
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
-    /* Efecto de fondo con ruido para un look más texturizado */
-    background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noise"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/%3E%3CfeColorMatrix type="saturate" values="0"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noise)"/%3E%3C/svg%3E');
-    background-size: cover;
-  }
-  
-  .glassmorphism {
-    background: rgba(23, 26, 33, 0.5); /* Semi-transparente */
-    backdrop-filter: blur(10px); /* El efecto de desenfoque */
-    border: 1px solid hsla(var(--border), 0.2); /* Borde sutil */
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  }
-
-  .glow-primary-text {
-    text-shadow: 0 0 8px hsl(var(--primary), 0.7), 0 0 16px hsl(var(--primary), 0.5);
-  }
-
-  .glow-primary-box {
-    box-shadow: 0 0 5px hsl(var(--primary), 0.5), 0 0 10px hsl(var(--primary), 0.3);
   }
 }

@@ -31,7 +31,7 @@ import {
 } from 'firebase/firestore';
 import SetlistCard from '@/components/SetlistCard';
 import type { Setlist } from '@/app/setlists/page';
-import { Search, Rocket } from 'lucide-react';
+import { Search, Music2 } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -117,16 +117,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Columna Izquierda - Biblioteca */}
         <div className="lg:col-span-2">
-           <Card className="h-full flex flex-col glassmorphism">
+           <Card className="h-full flex flex-col border-neutral-800">
             <CardHeader>
-              <CardTitle className="text-primary glow-primary-text">Biblioteca de Canciones</CardTitle>
+              <CardTitle>Biblioteca de Canciones</CardTitle>
                <div className="relative mt-4">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar en la biblioteca..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-neutral-800/50 border-neutral-700 focus:ring-primary"
+                  className="pl-9 bg-neutral-900/50 border-neutral-700"
                 />
               </div>
             </CardHeader>
@@ -137,14 +137,14 @@ export default function DashboardPage() {
                 <div className="overflow-y-auto max-h-[60vh]">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-b-border/20 hover:bg-transparent">
+                      <TableRow className="border-b-border/60 hover:bg-transparent">
                         <TableHead>Título</TableHead>
                         <TableHead>Artista</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredSongs.map((song) => (
-                        <TableRow key={song.id} className="border-b-border/20">
+                        <TableRow key={song.id} className="border-b-border/60">
                           <TableCell className="font-medium">
                             {song.title}
                           </TableCell>
@@ -167,9 +167,9 @@ export default function DashboardPage() {
 
         {/* Columna Derecha - Setlists */}
         <div className="lg:col-span-1">
-           <Card className="h-full flex flex-col glassmorphism">
+           <Card className="h-full flex flex-col border-neutral-800">
             <CardHeader>
-              <CardTitle className="text-primary glow-primary-text">Mis Setlists</CardTitle>
+              <CardTitle>Mis Setlists</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
               {isLoadingSetlists ? (
@@ -185,29 +185,19 @@ export default function DashboardPage() {
                     <p className="text-muted-foreground mb-4">
                         Aún no has creado ningún setlist.
                     </p>
-                    <Link href="/setlists">
-                        <Button className="glow-primary-box">
-                            Crear Mi Primer Setlist
-                        </Button>
-                    </Link>
                 </div>
               )}
             </CardContent>
-             <CardFooter>
+             <CardFooter className="flex-col gap-4 items-stretch">
                <Link href="/setlists" className='w-full'>
-                <Button className="w-full glow-primary-box">Crear Nuevo Setlist</Button>
+                <Button className="w-full bg-yellow-500 text-black hover:bg-yellow-400">Crear Nuevo Setlist</Button>
+               </Link>
+               <Link href="/setlists" className='w-full'>
+                <Button className="w-full" variant="outline">Ir a Mis Setlists</Button>
                </Link>
             </CardFooter>
           </Card>
         </div>
-      </div>
-      <div className="mt-12 text-center">
-        <Link href="/setlists">
-            <Button size="lg" className="w-full max-w-md glow-primary-box">
-                <Rocket className="mr-2 h-5 w-5" />
-                Ir a Mis Setlists
-            </Button>
-        </Link>
       </div>
     </main>
   );

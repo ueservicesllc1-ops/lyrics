@@ -41,7 +41,7 @@ export default function AdminPage() {
       </div>
        <div className="mt-8">
         <Link href="/">
-          <Button variant="outline">Volver al Inicio</Button>
+          <Button variant="outline">Volver al Dashboard</Button>
         </Link>
       </div>
     </main>

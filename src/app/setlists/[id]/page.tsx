@@ -209,12 +209,12 @@ export default function SetlistDetailPage() {
     <main className="container mx-auto p-4">
        <header className="mb-8 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
          <div>
-          <h1 className="text-4xl font-bold glow-primary-text">{setlist.name}</h1>
+          <h1 className="text-4xl font-bold">{setlist.name}</h1>
           <p className="text-muted-foreground">{format(setlistDate, 'PPP')}</p>
         </div>
         <div className="flex items-center gap-2">
             <Link href="/">
-                <Button variant="outline">Volver al Inicio</Button>
+                <Button variant="outline">Volver al Dashboard</Button>
             </Link>
             <Button variant="outline" onClick={() => router.push('/setlists')}>
                 Volver a Setlists
@@ -223,7 +223,7 @@ export default function SetlistDetailPage() {
       </header>
       
       <div className="grid gap-12 md:grid-cols-2">
-        <Card className="glassmorphism">
+        <Card>
           <CardHeader>
             <CardTitle>Canciones en este Setlist</CardTitle>
             <CardDescription>Arrastra canciones aquí para añadirlas. Haz clic en la papelera para quitarlas.</CardDescription>
@@ -232,13 +232,13 @@ export default function SetlistDetailPage() {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onDragLeave={handleDragLeave}
-            className={`rounded-md border-2 border-dashed ${isDraggingOver ? 'border-primary bg-muted/50 glow-primary-box' : 'border-transparent'} transition-colors duration-200 p-2 min-h-[200px]`}
+            className={`rounded-md border-2 border-dashed ${isDraggingOver ? 'border-primary bg-muted/50' : 'border-transparent'} transition-colors duration-200 p-2 min-h-[200px]`}
           >
             {songsInSetlist.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
               <ul className="space-y-2">
                 {songsInSetlist.map(song => (
-                  <li key={song.id} className="flex items-center justify-between p-3 rounded-md bg-black/20 hover:bg-black/40">
+                  <li key={song.id} className="flex items-center justify-between p-3 rounded-md bg-muted/30 hover:bg-muted/50">
                     <div>
                       <span className="font-medium">{song.title}</span>
                       <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
@@ -260,7 +260,7 @@ export default function SetlistDetailPage() {
           </CardContent>
         </Card>
 
-        <Card className="glassmorphism">
+        <Card>
           <CardHeader>
             <CardTitle>Añadir Canción desde la Biblioteca</CardTitle>
              <div className="relative mt-2">
@@ -269,7 +269,7 @@ export default function SetlistDetailPage() {
                     placeholder="Buscar por título o artista..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 bg-neutral-800/50 border-neutral-700 focus:ring-primary"
+                    className="pl-9"
                 />
             </div>
           </CardHeader>
@@ -283,7 +283,7 @@ export default function SetlistDetailPage() {
                                     key={song.id}
                                     draggable="true"
                                     onDragStart={(e) => handleDragStart(e, song.id)}
-                                    className="cursor-grab active:cursor-grabbing hover:bg-muted/30"
+                                    className="cursor-grab active:cursor-grabbing hover:bg-muted/50"
                                 >
                                     <TableCell className="font-medium">{song.title}</TableCell>
                                     <TableCell>{song.artist || 'N/A'}</TableCell>
@@ -305,7 +305,7 @@ export default function SetlistDetailPage() {
 
        <div className="mt-12 text-center">
             <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
-                <Button size="lg" disabled={songsInSetlist.length === 0} className="glow-primary-box">
+                <Button size="lg" disabled={songsInSetlist.length === 0}>
                     <Rocket className="mr-2 h-5 w-5" />
                     Iniciar Presentación
                 </Button>
