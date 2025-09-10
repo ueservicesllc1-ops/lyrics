@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Play, Pause, RefreshCw, AlertTriangle, X } from 'lucide-react';
+import { Play, Pause, RefreshCw, AlertTriangle, X, Minus, Plus, Text } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
+import { cn } from '@/lib/utils';
 
 interface Song {
   id: string;
@@ -36,6 +37,7 @@ function TeleprompterContent() {
   const [scrollSpeed, setScrollSpeed] = useState(5);
   const [isScrolling, setIsScrolling] = useState(false);
   const [isMirrored, setIsMirrored] = useState(false);
+  const [fontSize, setFontSize] = useState('text-6xl');
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -183,6 +185,16 @@ function TeleprompterContent() {
       carouselApi?.scrollTo(index);
   }
 
+  const handleFontSizeChange = (size: 'small' | 'medium' | 'large') => {
+      const sizes = {
+          small: 'text-5xl',
+          medium: 'text-6xl',
+          large: 'text-7xl'
+      };
+      setFontSize(sizes[size]);
+  };
+
+
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen w-screen bg-neutral-900 text-white text-xl">Cargando teleprompter...</div>;
   }
@@ -217,15 +229,16 @@ function TeleprompterContent() {
 
       <div
         ref={contentRef}
-        className={`flex-grow overflow-y-scroll p-16 text-6xl leading-relaxed whitespace-pre-wrap transition-transform duration-300 text-center ${
+        className={cn(`flex-grow overflow-y-scroll p-16 leading-relaxed whitespace-pre-wrap transition-all duration-300 text-center`,
+          fontSize,
           isMirrored ? 'scale-x-[-1]' : ''
-        }`}
+        )}
       >
         {lyrics}
       </div>
 
       <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
-        <div className="max-w-4xl mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg">
+        <div className="max-w-5xl mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg">
             <div className="flex flex-col gap-4">
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
                     
@@ -258,7 +271,13 @@ function TeleprompterContent() {
                     </div>
 
                     {/* Right Controls */}
-                    <div className="flex-1 flex justify-end items-center gap-4">
+                    <div className="flex-1 flex justify-end items-center gap-6">
+                        <div className="flex items-center gap-2">
+                           <Label className="text-sm shrink-0">Tamaño</Label>
+                           <Button onClick={() => handleFontSizeChange('small')} variant={fontSize === 'text-5xl' ? 'secondary' : 'outline'} size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">Pequeño</Button>
+                           <Button onClick={() => handleFontSizeChange('medium')} variant={fontSize === 'text-6xl' ? 'secondary' : 'outline'} size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">Mediano</Button>
+                           <Button onClick={() => handleFontSizeChange('large')} variant={fontSize === 'text-7xl' ? 'secondary' : 'outline'} size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">Grande</Button>
+                        </div>
                         <div className="flex items-center gap-2 w-full max-w-xs">
                             <Label htmlFor="speed" className='shrink-0'>Velocidad</Label>
                             <Slider
