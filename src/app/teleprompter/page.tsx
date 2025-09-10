@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, Suspense, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 
@@ -10,7 +10,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Play, Pause, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Play, Pause, RefreshCw, AlertTriangle, LogOut } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 
@@ -23,6 +23,7 @@ interface Song {
 
 function TeleprompterContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const setlistId = searchParams.get('setlistId');
 
   const [songs, setSongs] = useState<Song[]>([]);
@@ -197,10 +198,18 @@ function TeleprompterContent() {
     <div className="container mx-auto p-4 flex flex-col items-center gap-8">
       <Card className="w-full max-w-4xl">
         <CardHeader>
-          <CardTitle>Teleprompter: {setlistName}</CardTitle>
-          <CardDescription>
-            {songs[currentSongIndex]?.title || 'Setlist cargado'}
-          </CardDescription>
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle>Teleprompter: {setlistName}</CardTitle>
+              <CardDescription>
+                {songs[currentSongIndex]?.title || 'Setlist cargado'}
+              </CardDescription>
+            </div>
+            <Button variant="outline" onClick={() => router.back()}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Salir
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div
