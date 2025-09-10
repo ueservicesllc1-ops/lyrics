@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, DragEvent } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -44,6 +44,8 @@ export default function SetlistDetailPage() {
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
 
   const fetchSetlistAndSongs = useCallback(async () => {
     if (!user) return;
@@ -134,12 +136,35 @@ export default function SetlistDetailPage() {
     }
   };
 
+  // --- Drag and Drop Handlers ---
+  const handleDragStart = (e: DragEvent<HTMLTableRowElement>, songId: string) => {
+    e.dataTransfer.setData('songId', songId);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Necessary to allow dropping
+    setIsDraggingOver(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    setIsDraggingOver(false);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingOver(false);
+    const songId = e.dataTransfer.getData('songId');
+    if (songId) {
+      handleAddSongToSetlist(songId);
+    }
+  };
+
 
   if (isLoading || authLoading) {
     return <div className="container mx-auto p-4 text-center">Cargando detalles del setlist...</div>;
   }
 
-  if (error) {
+  if (error && !isLoading) {
      return (
       <main className="container mx-auto p-4">
         <Alert variant="destructive">
@@ -189,9 +214,14 @@ export default function SetlistDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle>Canciones en este Setlist</CardTitle>
-            <CardDescription>Esta es la lista de canciones para el evento.</CardDescription>
+            <CardDescription>Arrastra canciones aquí para añadirlas. Haz clic en la papelera para quitarlas.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent 
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onDragLeave={handleDragLeave}
+            className={`rounded-md border-2 border-dashed ${isDraggingOver ? 'border-primary bg-muted' : 'border-transparent'} transition-colors duration-200 p-2 min-h-[200px]`}
+          >
             {songsInSetlist.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
               <ul className="space-y-2">
@@ -206,7 +236,11 @@ export default function SetlistDetailPage() {
               </ul>
               </div>
             ) : (
-              <p className="text-muted-foreground text-center py-4">Aún no hay canciones en este setlist.</p>
+              <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground text-center py-4">
+                  {isDraggingOver ? '¡Suelta para añadir!' : 'Aún no hay canciones en este setlist.'}
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -222,30 +256,24 @@ export default function SetlistDetailPage() {
             />
           </CardHeader>
           <CardContent className="space-y-4">
-            {error && (
-                <Alert variant="destructive" className="mt-4">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-            )}
-            <div className="max-h-80 overflow-y-auto">
+            <div className="max-h-[400px] overflow-y-auto">
                 <Table>
                     <TableBody>
                         {filteredAvailableSongs.length > 0 ? (
                             filteredAvailableSongs.map(song => (
-                                <TableRow key={song.id}>
+                                <TableRow 
+                                    key={song.id}
+                                    draggable="true"
+                                    onDragStart={(e) => handleDragStart(e, song.id)}
+                                    className="cursor-grab active:cursor-grabbing"
+                                >
                                     <TableCell className="font-medium">{song.title}</TableCell>
                                     <TableCell>{song.artist || 'N/A'}</TableCell>
-                                    <TableCell className="text-right">
-                                        <Button variant="ghost" size="icon" onClick={() => handleAddSongToSetlist(song.id)}>
-                                            <PlusCircle className="h-5 w-5 text-green-600" />
-                                        </Button>
-                                    </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                            <TableRow>
-                               <TableCell colSpan={3} className="text-center text-muted-foreground">
+                               <TableCell colSpan={2} className="text-center text-muted-foreground">
                                    {availableSongs.length > 0 ? "No se encontraron canciones." : "La biblioteca está vacía."}
                                 </TableCell>
                            </TableRow>
@@ -268,3 +296,5 @@ export default function SetlistDetailPage() {
     </main>
   );
 }
+
+    
