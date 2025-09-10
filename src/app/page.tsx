@@ -8,6 +8,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Table,
@@ -80,7 +81,7 @@ export default function DashboardPage() {
       );
       setSetlists(setlistsData);
     } catch (e) {
-      console.error('Error fetching setlists: 'e);
+      console.error('Error fetching setlists: ', e);
     } finally {
       setIsLoadingSetlists(false);
     }
@@ -168,7 +169,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-1">
            <Card className="h-full flex flex-col bg-card/80 backdrop-blur-sm border-border/20">
             <CardHeader>
-              <CardTitle className="text-primary">Próximos Eventos</CardTitle>
+              <CardTitle className="text-primary">Mis Setlists</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
               {isLoadingSetlists ? (
@@ -181,15 +182,22 @@ export default function DashboardPage() {
                    <Link href="/setlists" className='w-full mt-2'>
                         <Button variant="ghost" className="w-full text-left justify-between hover:bg-neutral-700/50 p-4 h-auto">
                             <div>
-                                <p>Ver Detalles</p>
+                                <p>Ver todos los Setlists</p>
                             </div>
                         </Button>
                    </Link>
                 </div>
               ) : (
-                <p className="text-muted-foreground text-center py-4">
-                  Aún no has creado ningún setlist.
-                </p>
+                 <div className="text-center py-4">
+                    <p className="text-muted-foreground mb-4">
+                        Aún no has creado ningún setlist.
+                    </p>
+                    <Link href="/setlists">
+                        <Button className="bg-[#D4A32D] text-black hover:bg-[#D4A32D]/90 font-bold">
+                            Crear Mi Primer Setlist
+                        </Button>
+                    </Link>
+                </div>
               )}
             </CardContent>
              <CardFooter>
