@@ -8,7 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Trash2, Rocket, Search, ChevronRight, GripVertical } from 'lucide-react';
+import { AlertTriangle, Trash2, Rocket, Search, ChevronRight, GripVertical, ArrowLeft } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 import { Setlist } from '../page';
@@ -163,7 +163,7 @@ export default function SetlistDetailPage() {
     );
 
   if (isLoading || authLoading) {
-    return <div className="container mx-auto p-4 text-center">Loading setlist details...</div>;
+    return <div className="flex justify-center items-center h-screen w-screen text-center">Loading setlist details...</div>;
   }
 
   if (error) {
@@ -185,40 +185,48 @@ export default function SetlistDetailPage() {
   }
 
   return (
-    <main className="flex h-screen w-screen bg-background">
+    <main className="flex h-screen w-screen bg-background text-foreground">
        {/* Left Panel: Song Library */}
-       <div className="w-1/2 md:w-2/5 lg:w-1/3 flex flex-col border-r">
-            <header className="bg-primary text-primary-foreground p-4">
-                <h1 className="text-2xl font-bold">Song Library</h1>
-                <div className="relative mt-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary-foreground/70" />
+       <div className="w-1/2 md:w-2/5 lg:w-1/3 flex flex-col border-r bg-white">
+            <header className="bg-primary text-primary-foreground p-4 flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold">Song Library</h1>
+                  <p className="text-sm opacity-80">Drag songs to your setlist</p>
+                </div>
+                 <Button variant="ghost" size="icon" onClick={() => router.push('/setlists')}>
+                    <ArrowLeft className="h-5 w-5" />
+                 </Button>
+            </header>
+            <div className="p-4">
+                 <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input 
-                        placeholder="Search"
+                        placeholder="Search songs..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="bg-white/20 text-primary-foreground placeholder:text-primary-foreground/70 pl-9 border-0 focus-visible:ring-offset-0 focus-visible:ring-2 focus-visible:ring-white"
+                        className="bg-neutral-100 pl-9 border-neutral-200 focus-visible:ring-primary"
                     />
                 </div>
-            </header>
+            </div>
             <div className="flex-grow overflow-y-auto">
-                <ul className="divide-y">
+                <ul className="divide-y divide-gray-100">
                     {filteredAvailableSongs.length > 0 ? (
                         filteredAvailableSongs.map(song => (
                             <li 
                                 key={song.id}
                                 draggable="true"
                                 onDragStart={(e) => handleDragStart(e, song.id)}
-                                className="flex items-center justify-between p-4 cursor-grab active:cursor-grabbing hover:bg-secondary"
+                                className="flex items-center justify-between p-4 cursor-grab active:cursor-grabbing hover:bg-secondary/50"
                             >
                                 <div>
-                                    <p className="font-semibold">{song.title}</p>
-                                    <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
+                                    <p className="font-semibold text-sm">{song.title}</p>
+                                    <p className="text-xs text-muted-foreground">{song.artist || 'N/A'}</p>
                                 </div>
                                 <ChevronRight className="h-5 w-5 text-muted-foreground" />
                             </li>
                         ))
                     ) : (
-                        <li className="p-4 text-center text-muted-foreground">
+                        <li className="p-4 text-center text-sm text-muted-foreground">
                             {availableSongs.length > 0 ? "No songs found." : "Library is empty."}
                         </li>
                     )}
@@ -235,14 +243,11 @@ export default function SetlistDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
-                        <Button disabled={songsInSetlist.length === 0}>
+                        <Button disabled={songsInSetlist.length === 0} className='bg-accent hover:bg-accent/90 text-accent-foreground'>
                             <Rocket className="mr-2 h-4 w-4" />
                             Start
                         </Button>
                     </Link>
-                    <Button variant="outline" onClick={() => router.push('/setlists')}>
-                       Back
-                    </Button>
                      <Button variant="ghost" size="icon">
                         <GripVertical className="h-5 w-5" />
                     </Button>
@@ -252,20 +257,20 @@ export default function SetlistDetailPage() {
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onDragLeave={handleDragLeave}
-                className={`flex-grow p-4 bg-white transition-colors duration-200 ${isDraggingOver ? 'bg-secondary' : ''}`}
+                className={`flex-grow p-4 transition-colors duration-200 ${isDraggingOver ? 'bg-secondary' : 'bg-background'}`}
             >
-                <div className={`h-full w-full border-2 border-dashed rounded-lg ${isDraggingOver ? 'border-primary' : 'border-border'}`}>
+                <div className={`h-full w-full border-2 border-dashed rounded-lg flex items-center justify-center ${isDraggingOver ? 'border-primary' : 'border-border'}`}>
                     {songsInSetlist.length > 0 ? (
-                         <ul className="divide-y p-2">
+                         <ul className="divide-y p-2 w-full">
                             {songsInSetlist.map((song, index) => (
-                            <li key={song.id} className="flex items-center justify-between p-3 rounded-md hover:bg-secondary">
-                                <div className="flex items-center gap-3">
-                                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-accent text-accent-foreground text-sm font-bold">
+                            <li key={song.id} className="flex items-center justify-between p-3 rounded-md hover:bg-white">
+                                <div className="flex items-center gap-4">
+                                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-primary/10 text-primary text-sm font-bold">
                                         {index + 1}
                                     </span>
                                     <div>
-                                        <p className="font-semibold">{song.title}</p>
-                                        <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
+                                        <p className="font-semibold text-sm">{song.title}</p>
+                                        <p className="text-xs text-muted-foreground">{song.artist || 'N/A'}</p>
                                     </div>
                                 </div>
                                 <Button variant="ghost" size="icon" onClick={() => handleRemoveSongFromSetlist(song.id)}>
@@ -275,9 +280,12 @@ export default function SetlistDetailPage() {
                             ))}
                         </ul>
                     ) : (
-                        <div className="flex items-center justify-center h-full">
-                            <p className="text-muted-foreground">
+                        <div className="text-center">
+                            <p className="text-muted-foreground font-semibold">
                                 Drag songs here
+                            </p>
+                             <p className="text-sm text-muted-foreground mt-1">
+                                Add from the library to build your setlist.
                             </p>
                         </div>
                     )}

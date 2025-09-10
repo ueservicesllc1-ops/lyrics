@@ -16,9 +16,9 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
     
   return (
     <Link href={`/setlists/${setlist.id}`} className="block group">
-      <div className="w-full text-left justify-between bg-secondary/50 hover:bg-secondary p-4 rounded-lg flex items-center transition-all duration-200 border border-border/60">
+      <div className="w-full text-left justify-between bg-card hover:bg-secondary/50 p-4 rounded-lg flex items-center transition-all duration-200 border">
         <div className='flex-grow overflow-hidden'>
-          <p className="font-semibold text-white truncate">{setlist.name}</p>
+          <p className="font-semibold text-card-foreground truncate">{setlist.name}</p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
             <div className='flex items-center gap-1.5'>
                 <Calendar className="h-3 w-3" />
@@ -30,7 +30,7 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
             </div>
           </div>
         </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-white transition-colors shrink-0 ml-4" />
+        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 ml-4" />
       </div>
     </Link>
   );

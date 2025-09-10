@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 
 export default function SetlistsLayout({
@@ -11,6 +11,13 @@ export default function SetlistsLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Si estamos en la página de un setlist específico, no mostramos el layout
+  if (pathname.startsWith('/setlists/')) {
+    return <>{children}</>;
+  }
+
 
   useEffect(() => {
     if (loading) return; 

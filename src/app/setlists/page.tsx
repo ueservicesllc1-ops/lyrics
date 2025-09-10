@@ -67,7 +67,7 @@ export default function SetlistsPage() {
       const q = query(
         collection(db, 'setlists'),
         where('userId', '==', user.uid),
-        orderBy('name', 'asc')
+        orderBy('date', 'desc')
       );
       const querySnapshot = await getDocs(q);
       const setlistsData = querySnapshot.docs.map(
@@ -131,7 +131,7 @@ export default function SetlistsPage() {
   };
 
   return (
-    <main className="container mx-auto p-4">
+    <main className="container mx-auto p-4 md:p-8">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold">Mis Setlists</h1>
@@ -139,12 +139,12 @@ export default function SetlistsPage() {
             Crea y organiza tus setlists para los eventos.
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className='bg-accent hover:bg-accent/90 text-accent-foreground'>
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Crear Nuevo Setlist
+                Crear Setlist
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
@@ -163,7 +163,7 @@ export default function SetlistsPage() {
                     </Label>
                     <Input
                       id="setlist-name"
-                      placeholder="Ej: Servicio Dominical"
+                      placeholder="Ej: Concierto Acústico"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="col-span-3"
@@ -208,7 +208,7 @@ export default function SetlistsPage() {
                   )}
                 </div>
                 <DialogFooter>
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading} className='bg-accent hover:bg-accent/90 text-accent-foreground'>
                     {isLoading ? 'Creando...' : 'Crear Setlist'}
                   </Button>
                 </DialogFooter>
@@ -222,20 +222,24 @@ export default function SetlistsPage() {
       </header>
 
       <div>
-        <Card className="card-metallic">
+        <Card>
           <CardHeader>
             <CardTitle>Próximos Eventos</CardTitle>
             <CardDescription>
-              Aquí aparecerán tus setlists guardados. Haz clic para añadir canciones y lanzar el teleprompter.
+              Aquí aparecerán tus setlists guardados. Haz clic para editarlos.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {isLoading && setlists.length === 0 ? (
               <p>Cargando setlists...</p>
             ) : setlists.length === 0 && !error ? (
-              <p className="text-muted-foreground text-center py-8 col-span-full">
-                Aún no has creado ningún setlist.
-              </p>
+              <div className="text-muted-foreground text-center py-8 col-span-full">
+                <p>Aún no has creado ningún setlist.</p>
+                <Button className='mt-4 bg-accent hover:bg-accent/90 text-accent-foreground' onClick={() => setIsDialogOpen(true)}>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Crear tu primer setlist
+                </Button>
+              </div>
             ) : error ? (
                 <Alert variant="destructive" className="col-span-full">
                     <AlertTriangle className="h-4 w-4" />
@@ -249,12 +253,6 @@ export default function SetlistsPage() {
           </CardContent>
         </Card>
       </div>
-       <div className="mt-8 text-center">
-            <Button size="lg" disabled className="cursor-not-allowed">
-                <Rocket className="mr-2 h-5 w-5" />
-                Elige un setlist para iniciar la presentación
-            </Button>
-        </div>
     </main>
   );
 }
