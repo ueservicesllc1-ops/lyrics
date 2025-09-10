@@ -242,7 +242,7 @@ function TeleprompterContent() {
                 <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
                     
                     {/* Left Controls */}
-                    <div className="flex-1 flex justify-start">
+                    <div className="flex-1 flex justify-start items-center gap-4">
                         <Button
                         onClick={resetScroll}
                         variant="outline"
@@ -252,6 +252,11 @@ function TeleprompterContent() {
                         >
                         <RefreshCw className="h-5 w-5" />
                         </Button>
+                         <div className="flex items-center gap-2">
+                            <button onClick={() => setTextColor('text-white')} className={cn('h-6 w-6 rounded-full bg-white transition-all', textColor === 'text-white' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-white' : 'ring-0')}></button>
+                            <button onClick={() => setTextColor('text-yellow-400')} className={cn('h-6 w-6 rounded-full bg-yellow-400 transition-all', textColor === 'text-yellow-400' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-yellow-400' : 'ring-0')}></button>
+                            <button onClick={() => setTextColor('text-sky-400')} className={cn('h-6 w-6 rounded-full bg-sky-400 transition-all', textColor === 'text-sky-400' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-sky-400' : 'ring-0')}></button>
+                        </div>
                     </div>
                     
                     {/* Center Control */}
@@ -271,11 +276,6 @@ function TeleprompterContent() {
 
                     {/* Right Controls */}
                     <div className="flex-1 flex justify-end items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => setTextColor('text-white')} className={cn('h-6 w-6 rounded-full bg-white transition-all', textColor === 'text-white' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-white' : 'ring-0')}></button>
-                            <button onClick={() => setTextColor('text-yellow-400')} className={cn('h-6 w-6 rounded-full bg-yellow-400 transition-all', textColor === 'text-yellow-400' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-yellow-400' : 'ring-0')}></button>
-                            <button onClick={() => setTextColor('text-sky-400')} className={cn('h-6 w-6 rounded-full bg-sky-400 transition-all', textColor === 'text-sky-400' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-sky-400' : 'ring-0')}></button>
-                        </div>
                          <div className="flex items-center gap-2">
                            <Button onClick={() => handleFontSizeChange('small')} variant="outline" size="icon" className={cn('h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20', { 'bg-accent hover:bg-accent/90 text-accent-foreground border-accent': fontSize === 'text-5xl'})}>
                              <span className='font-bold text-xs'>A</span>
@@ -345,3 +345,5 @@ export default function TeleprompterPage() {
         </Suspense>
     )
 }
+
+    
