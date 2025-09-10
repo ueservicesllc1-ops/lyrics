@@ -227,8 +227,23 @@ function TeleprompterContent() {
       <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
         <div className="max-w-4xl mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg">
             <div className="flex flex-col gap-4">
-                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-4">
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
+                    
+                    {/* Left Controls */}
+                    <div className="flex-1 flex justify-start">
+                        <Button
+                        onClick={resetScroll}
+                        variant="outline"
+                        size="icon"
+                        aria-label="Reset"
+                        className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20"
+                        >
+                        <RefreshCw className="h-6 w-6" />
+                        </Button>
+                    </div>
+                    
+                    {/* Center Control */}
+                    <div className="flex-shrink-0">
                         <Button
                         onClick={isScrolling ? stopScrolling : startScrolling}
                         aria-label={isScrolling ? 'Pause' : 'Play'}
@@ -240,40 +255,34 @@ function TeleprompterContent() {
                             <Play className="h-8 w-8 ml-1" />
                         )}
                         </Button>
-                        <Button
-                        onClick={resetScroll}
-                        variant="outline"
-                        size="icon"
-                        aria-label="Reset"
-                        className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20"
-                        >
-                        <RefreshCw className="h-6 w-6" />
-                        </Button>
                     </div>
 
-                    <div className="flex items-center gap-2 w-full max-w-xs">
-                        <Label htmlFor="speed" className='shrink-0'>Velocidad</Label>
-                        <Slider
-                        id="speed"
-                        min={1}
-                        max={10}
-                        step={1}
-                        value={[scrollSpeed]}
-                        onValueChange={(value) => setScrollSpeed(value[0])}
-                        />
-                    </div>
+                    {/* Right Controls */}
+                    <div className="flex-1 flex justify-end items-center gap-4">
+                        <div className="flex items-center gap-2 w-full max-w-xs">
+                            <Label htmlFor="speed" className='shrink-0'>Velocidad</Label>
+                            <Slider
+                            id="speed"
+                            min={1}
+                            max={10}
+                            step={1}
+                            value={[scrollSpeed]}
+                            onValueChange={(value) => setScrollSpeed(value[0])}
+                            />
+                        </div>
 
-                    <div className="flex items-center space-x-2">
-                        <Switch
-                        id="mirror-mode"
-                        checked={isMirrored}
-                        onCheckedChange={setIsMirrored}
-                        />
-                        <Label htmlFor="mirror-mode">Modo Espejo</Label>
+                        <div className="flex items-center space-x-2">
+                            <Switch
+                            id="mirror-mode"
+                            checked={isMirrored}
+                            onCheckedChange={setIsMirrored}
+                            />
+                            <Label htmlFor="mirror-mode">Espejo</Label>
+                        </div>
                     </div>
                 </div>
                  {songs.length > 0 && (
-                <div className='w-full'>
+                <div className='w-full pt-2'>
                     <Carousel setApi={setCarouselApi} opts={{align: "start"}} className="w-full">
                         <CarouselContent>
                             {songs.map((song, index) => (
