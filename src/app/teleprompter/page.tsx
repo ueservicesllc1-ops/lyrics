@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Play, Pause, RefreshCw, AlertTriangle, X, Minus, Plus, Text } from 'lucide-react';
+import { Play, Pause, RefreshCw, AlertTriangle, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { cn } from '@/lib/utils';
@@ -38,6 +38,7 @@ function TeleprompterContent() {
   const [isScrolling, setIsScrolling] = useState(false);
   const [isMirrored, setIsMirrored] = useState(false);
   const [fontSize, setFontSize] = useState('text-6xl');
+  const [textColor, setTextColor] = useState('text-white');
   const contentRef = useRef<HTMLDivElement>(null);
   const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -145,12 +146,9 @@ function TeleprompterContent() {
     const totalLines = fullText.split('\n').length;
     const lineOfSong = fullText.substring(0, position).split('\n').length;
     
-    // A bit of a hacky way to estimate scroll position, might need refinement
     const scrollRatio = (lineOfSong - 1) / totalLines;
     
     contentRef.current.scrollTop = contentRef.current.scrollHeight * scrollRatio;
-    // Don't reset scroll, just move to the position.
-    // resetScroll(); 
   }, [songs]);
 
 
@@ -216,7 +214,7 @@ function TeleprompterContent() {
   }
 
   return (
-    <div className="h-screen w-screen bg-neutral-900 text-white flex flex-col font-sans">
+    <div className="h-screen w-screen bg-neutral-900 flex flex-col font-sans">
       
        <Button 
             variant="ghost" 
@@ -231,6 +229,7 @@ function TeleprompterContent() {
         ref={contentRef}
         className={cn(`flex-grow overflow-y-scroll p-16 leading-relaxed whitespace-pre-wrap transition-all duration-300 text-center`,
           fontSize,
+          textColor,
           isMirrored ? 'scale-x-[-1]' : ''
         )}
       >
@@ -273,6 +272,11 @@ function TeleprompterContent() {
                     {/* Right Controls */}
                     <div className="flex-1 flex justify-end items-center gap-4">
                         <div className="flex items-center gap-2">
+                            <button onClick={() => setTextColor('text-white')} className={cn('h-6 w-6 rounded-full bg-white transition-all', textColor === 'text-white' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-white' : 'ring-0')}></button>
+                            <button onClick={() => setTextColor('text-yellow-400')} className={cn('h-6 w-6 rounded-full bg-yellow-400 transition-all', textColor === 'text-yellow-400' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-yellow-400' : 'ring-0')}></button>
+                            <button onClick={() => setTextColor('text-sky-400')} className={cn('h-6 w-6 rounded-full bg-sky-400 transition-all', textColor === 'text-sky-400' ? 'ring-2 ring-offset-2 ring-offset-neutral-800 ring-sky-400' : 'ring-0')}></button>
+                        </div>
+                         <div className="flex items-center gap-2">
                            <Button onClick={() => handleFontSizeChange('small')} variant="outline" size="icon" className={cn('h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20', { 'bg-accent hover:bg-accent/90 text-accent-foreground border-accent': fontSize === 'text-5xl'})}>
                              <span className='font-bold text-xs'>A</span>
                            </Button>
@@ -313,7 +317,7 @@ function TeleprompterContent() {
                             <CarouselItem key={song.id} className="basis-1/3 md:basis-1/4 lg:basis-1/5">
                                 <Button
                                 variant="outline"
-                                className={cn('w-full truncate h-9 text-xs bg-white/10 border-white/20 text-white hover:bg-white/20', { 'bg-accent text-accent-foreground border-accent hover:bg-accent/90': index === currentSongIndex })}
+                                className={cn('w-full truncate h-9 text-xs bg-white/10 border-white/20 hover:text-white hover:bg-white/20', { 'bg-accent text-accent-foreground border-accent hover:bg-accent/90': index === currentSongIndex })}
                                 onClick={() => handleCarouselSelect(index)}
                                 >
                                 {song.title}
