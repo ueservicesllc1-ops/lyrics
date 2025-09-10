@@ -9,8 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Play, Pause, RefreshCw, AlertTriangle, LogOut } from 'lucide-react';
+import { Play, Pause, RefreshCw, AlertTriangle, X } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 
@@ -69,7 +68,6 @@ function TeleprompterContent() {
           return;
         }
 
-        // Fetch all songs in one go
         const songsRef = collection(db, 'songs');
         const q = query(songsRef, where('__name__', 'in', songIds));
         const songsSnapshot = await getDocs(q);
@@ -79,7 +77,6 @@ function TeleprompterContent() {
             fetchedSongs[doc.id] = { id: doc.id, ...doc.data() } as Song;
         });
 
-        // Maintain the order from the setlist
         const orderedSongs = songIds.map(id => fetchedSongs[id]).filter(Boolean);
 
         setSongs(orderedSongs);
@@ -122,7 +119,7 @@ function TeleprompterContent() {
           stopScrolling();
         }
       }
-    }, 100 - scrollSpeed * 9); // Adjusted for better speed range
+    }, 100 - scrollSpeed * 9);
   }, [scrollSpeed, stopScrolling]);
 
   const resetScroll = () => {
@@ -134,6 +131,26 @@ function TeleprompterContent() {
       startScrolling();
     }
   };
+  
+    const scrollToSong = useCallback((index: number) => {
+    if (!contentRef.current || !songs[index]) return;
+    const songTitleId = `--- ${songs[index].title.toUpperCase()} ---`;
+    const fullText = contentRef.current.innerText;
+    const position = fullText.indexOf(songTitleId);
+    
+    if (position === -1) return;
+
+    const totalLines = fullText.split('\n').length;
+    const lineOfSong = fullText.substring(0, position).split('\n').length;
+    
+    // A bit of a hacky way to estimate scroll position, might need refinement
+    const scrollRatio = (lineOfSong - 1) / totalLines;
+    
+    contentRef.current.scrollTop = contentRef.current.scrollHeight * scrollRatio;
+    // Don't reset scroll, just move to the position.
+    // resetScroll(); 
+  }, [songs]);
+
 
   useEffect(() => {
     if (isScrolling) {
@@ -160,140 +177,125 @@ function TeleprompterContent() {
     return () => {
       carouselApi.off('select', onSelect);
     };
-  }, [carouselApi, songs]); // Added songs dependency
-
-  const scrollToSong = (index: number) => {
-    if (!contentRef.current || !songs[index]) return;
-    const songTitleId = `--- ${songs[index].title.toUpperCase()} ---`;
-    const fullText = contentRef.current.innerText;
-    const position = fullText.indexOf(songTitleId);
-    
-    // This is an approximation
-    const totalLines = fullText.split('\n').length;
-    const lineOfSong = fullText.substring(0, position).split('\n').length;
-    const scrollRatio = lineOfSong / totalLines;
-    
-    contentRef.current.scrollTop = contentRef.current.scrollHeight * scrollRatio;
-    resetScroll(); // Reset scroll to start from the top of the song
-  };
+  }, [carouselApi, songs, scrollToSong]);
 
   const handleCarouselSelect = (index: number) => {
       carouselApi?.scrollTo(index);
   }
 
   if (isLoading) {
-    return <div className="text-center p-8">Cargando teleprompter...</div>;
+    return <div className="flex justify-center items-center h-screen w-screen bg-neutral-900 text-white text-xl">Cargando teleprompter...</div>;
   }
 
   if (error) {
     return (
-      <main className="container mx-auto p-4">
-        <Alert variant="destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      <main className="flex justify-center items-center h-screen w-screen bg-background">
+        <div className="container max-w-lg">
+            <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+            </Alert>
+            <Button variant="outline" onClick={() => router.back()} className="mt-4">
+                Volver
+            </Button>
+        </div>
       </main>
     );
   }
 
   return (
-    <div className="container mx-auto p-4 flex flex-col items-center gap-8">
-      <Card className="w-full max-w-5xl">
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>{setlistName}</CardTitle>
-              <CardDescription>
-                En reproducción: {songs[currentSongIndex]?.title || 'Setlist cargado'}
-              </CardDescription>
-            </div>
-            <Button variant="outline" onClick={() => router.back()}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Salir
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div
-            ref={contentRef}
-            className={`h-[60vh] overflow-y-scroll bg-neutral-900 text-white p-8 text-5xl leading-relaxed font-sans border rounded-md whitespace-pre-wrap transition-transform duration-300 text-center ${
-              isMirrored ? 'scale-x-[-1]' : ''
-            }`}
-          >
-            {lyrics}
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-6">
-            <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
-                 <div className="flex items-center gap-4">
-                    <Button
-                    onClick={isScrolling ? stopScrolling : startScrolling}
-                    variant="outline"
-                    size="icon"
-                    aria-label={isScrolling ? 'Pause' : 'Play'}
-                    className="w-12 h-12 rounded-full"
-                    >
-                    {isScrolling ? (
-                        <Pause className="h-6 w-6" />
-                    ) : (
-                        <Play className="h-6 w-6" />
-                    )}
-                    </Button>
-                    <Button
-                    onClick={resetScroll}
-                    variant="outline"
-                    size="icon"
-                    aria-label="Reset"
-                    className="w-12 h-12 rounded-full"
-                    >
-                    <RefreshCw className="h-6 w-6" />
-                    </Button>
-                </div>
+    <div className="h-screen w-screen bg-neutral-900 text-white flex flex-col font-sans">
+      
+       <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => router.back()}
+            className="fixed top-4 right-4 z-50 h-12 w-12 rounded-full bg-black/30 hover:bg-black/50 text-white hover:text-white"
+        >
+            <X className="h-6 w-6" />
+        </Button>
 
-                <div className="flex items-center gap-2 w-full max-w-xs">
-                    <Label htmlFor="speed">Velocidad</Label>
-                    <Slider
-                    id="speed"
-                    min={1}
-                    max={10}
-                    step={1}
-                    value={[scrollSpeed]}
-                    onValueChange={(value) => setScrollSpeed(value[0])}
-                    />
-                </div>
+      <div
+        ref={contentRef}
+        className={`flex-grow overflow-y-scroll p-16 text-6xl leading-relaxed whitespace-pre-wrap transition-transform duration-300 text-center ${
+          isMirrored ? 'scale-x-[-1]' : ''
+        }`}
+      >
+        {lyrics}
+      </div>
 
-                <div className="flex items-center space-x-2">
-                    <Switch
-                    id="mirror-mode"
-                    checked={isMirrored}
-                    onCheckedChange={setIsMirrored}
-                    />
-                    <Label htmlFor="mirror-mode">Modo Espejo</Label>
+      <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+        <div className="max-w-4xl mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-xl border border-white/10 shadow-lg">
+            <div className="flex flex-col gap-4">
+                 {songs.length > 0 && (
+                <div className='w-full'>
+                    <Carousel setApi={setCarouselApi} opts={{align: "start"}} className="w-full">
+                        <CarouselContent>
+                            {songs.map((song, index) => (
+                            <CarouselItem key={song.id} className="basis-1/3 md:basis-1/4 lg:basis-1/5">
+                                <Button
+                                variant={index === currentSongIndex ? 'secondary' : 'outline'}
+                                className={`w-full truncate h-12 text-xs md:text-sm ${index === currentSongIndex ? 'bg-accent text-accent-foreground border-accent' : 'bg-white/10 border-white/20 text-white hover:bg-white/20'}`}
+                                onClick={() => handleCarouselSelect(index)}
+                                >
+                                {song.title}
+                                </Button>
+                            </CarouselItem>
+                            ))}
+                        </CarouselContent>
+                        <CarouselPrevious className='-left-4 text-white bg-white/10 hover:bg-white/20 border-none' />
+                        <CarouselNext className='-right-4 text-white bg-white/10 hover:bg-white/20 border-none'/>
+                    </Carousel>
+                </div>
+                )}
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                        <Button
+                        onClick={isScrolling ? stopScrolling : startScrolling}
+                        aria-label={isScrolling ? 'Pause' : 'Play'}
+                        className="w-16 h-16 rounded-full bg-accent hover:bg-accent/90 text-accent-foreground"
+                        >
+                        {isScrolling ? (
+                            <Pause className="h-8 w-8" />
+                        ) : (
+                            <Play className="h-8 w-8 ml-1" />
+                        )}
+                        </Button>
+                        <Button
+                        onClick={resetScroll}
+                        variant="outline"
+                        size="icon"
+                        aria-label="Reset"
+                        className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20"
+                        >
+                        <RefreshCw className="h-6 w-6" />
+                        </Button>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full max-w-xs">
+                        <Label htmlFor="speed" className='shrink-0'>Velocidad</Label>
+                        <Slider
+                        id="speed"
+                        min={1}
+                        max={10}
+                        step={1}
+                        value={[scrollSpeed]}
+                        onValueChange={(value) => setScrollSpeed(value[0])}
+                        />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                        <Switch
+                        id="mirror-mode"
+                        checked={isMirrored}
+                        onCheckedChange={setIsMirrored}
+                        />
+                        <Label htmlFor="mirror-mode">Modo Espejo</Label>
+                    </div>
                 </div>
             </div>
-            {songs.length > 0 && (
-            <div className='w-full max-w-2xl'>
-                 <Carousel setApi={setCarouselApi} className="w-full">
-                    <CarouselContent>
-                        {songs.map((song, index) => (
-                        <CarouselItem key={song.id} className="basis-1/2 md:basis-1/3">
-                            <Button
-                            variant={index === currentSongIndex ? 'secondary' : 'outline'}
-                            className="w-full truncate"
-                            onClick={() => handleCarouselSelect(index)}
-                            >
-                            {song.title}
-                            </Button>
-                        </CarouselItem>
-                        ))}
-                    </CarouselContent>
-                    <CarouselPrevious />
-                    <CarouselNext />
-                </Carousel>
-            </div>
-            )}
-        </CardFooter>
-      </Card>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -301,7 +303,7 @@ function TeleprompterContent() {
 
 export default function TeleprompterPage() {
     return (
-        <Suspense fallback={<div className="text-center p-8">Cargando...</div>}>
+        <Suspense fallback={<div className="flex justify-center items-center h-screen w-screen bg-neutral-900 text-white text-xl">Cargando...</div>}>
             <TeleprompterContent />
         </Suspense>
     )
