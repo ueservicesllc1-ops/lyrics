@@ -175,12 +175,6 @@ export default function SetlistDetailPage() {
             <Button variant="outline" onClick={() => router.push('/setlists')}>
                 Volver a Setlists
             </Button>
-            <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
-                <Button disabled={songsInSetlist.length === 0}>
-                    <Rocket className="mr-2 h-4 w-4" />
-                    Iniciar Teleprompter
-                </Button>
-            </Link>
         </div>
       </header>
       
@@ -241,6 +235,15 @@ export default function SetlistDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+       <div className="mt-12 text-center">
+            <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
+                <Button size="lg" disabled={songsInSetlist.length === 0}>
+                    <Rocket className="mr-2 h-5 w-5" />
+                    Iniciar Presentación
+                </Button>
+            </Link>
+        </div>
     </main>
   );
 }
