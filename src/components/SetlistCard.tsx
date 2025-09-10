@@ -1,10 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import type { Setlist } from '@/app/setlists/page';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Calendar, Music } from 'lucide-react';
 
 interface SetlistCardProps {
   setlist: Setlist;
@@ -16,13 +15,22 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
     : (setlist.date as any).toDate();
     
   return (
-    <Link href={`/setlists/${setlist.id}`} className="block">
-      <div className="w-full text-left justify-between hover:bg-neutral-700/50 p-4 rounded-lg flex items-center transition-colors duration-200 border border-neutral-700">
-        <div>
+    <Link href={`/setlists/${setlist.id}`} className="block group">
+      <div className="w-full text-left justify-between bg-card/50 hover:bg-muted/50 p-4 rounded-lg flex items-center transition-all duration-200 border border-neutral-700/60 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
+        <div className='flex-grow'>
           <p className="font-semibold text-white">{setlist.name}</p>
-          <p className="text-sm text-muted-foreground">{format(date, 'PPP')}</p>
+          <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
+            <div className='flex items-center gap-1.5'>
+                <Calendar className="h-3 w-3" />
+                <span>{format(date, 'PPP')}</span>
+            </div>
+             <div className='flex items-center gap-1.5'>
+                <Music className="h-3 w-3" />
+                <span>{setlist.songs?.length || 0} canciones</span>
+            </div>
+          </div>
         </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
       </div>
     </Link>
   );

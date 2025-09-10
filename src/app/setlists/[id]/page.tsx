@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Trash2, Rocket, PlusCircle } from 'lucide-react';
+import { AlertTriangle, Trash2, Rocket, Search } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
 
@@ -80,10 +80,22 @@ export default function SetlistDetailPage() {
         // We need to fetch the full song details for the IDs in the setlist
         const songDetailsPromises = setlistData.songs.map(songId => getDoc(doc(db, 'songs', songId)));
         const songDetailsDocs = await Promise.all(songDetailsPromises);
-        const songsIn = songDetailsDocs
-            .filter(doc => doc.exists())
-            .map(doc => ({ id: doc.id, ...doc.data() } as Song));
-        setSongsInSetlist(songsIn);
+        
+        // Maintain the order from the setlist
+        const songsInSetlistMap = new Map<string, Song>();
+        songDetailsDocs.forEach(doc => {
+            if (doc.exists()) {
+                const song = { id: doc.id, ...doc.data() } as Song;
+                songsInSetlistMap.set(song.id, song);
+            }
+        });
+        
+        const orderedSongs = setlistData.songs
+            .map(songId => songsInSetlistMap.get(songId))
+            .filter((song): song is Song => !!song);
+            
+        setSongsInSetlist(orderedSongs);
+
       } else {
         setSongsInSetlist([]);
       }
@@ -108,7 +120,7 @@ export default function SetlistDetailPage() {
 
 
   const handleAddSongToSetlist = async (songId: string) => {
-    if (!songId) return;
+    if (!songId || setlist?.songs?.includes(songId)) return; // Prevent duplicates
     setError(null);
     try {
       const setlistDocRef = doc(db, 'setlists', setlistId);
@@ -197,7 +209,7 @@ export default function SetlistDetailPage() {
     <main className="container mx-auto p-4">
        <header className="mb-8 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
          <div>
-          <h1 className="text-4xl font-bold">{setlist.name}</h1>
+          <h1 className="text-4xl font-bold glow-primary-text">{setlist.name}</h1>
           <p className="text-muted-foreground">{format(setlistDate, 'PPP')}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -211,7 +223,7 @@ export default function SetlistDetailPage() {
       </header>
       
       <div className="grid gap-12 md:grid-cols-2">
-        <Card>
+        <Card className="glassmorphism">
           <CardHeader>
             <CardTitle>Canciones en este Setlist</CardTitle>
             <CardDescription>Arrastra canciones aquí para añadirlas. Haz clic en la papelera para quitarlas.</CardDescription>
@@ -220,14 +232,17 @@ export default function SetlistDetailPage() {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             onDragLeave={handleDragLeave}
-            className={`rounded-md border-2 border-dashed ${isDraggingOver ? 'border-primary bg-muted' : 'border-transparent'} transition-colors duration-200 p-2 min-h-[200px]`}
+            className={`rounded-md border-2 border-dashed ${isDraggingOver ? 'border-primary bg-muted/50 glow-primary-box' : 'border-transparent'} transition-colors duration-200 p-2 min-h-[200px]`}
           >
             {songsInSetlist.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
               <ul className="space-y-2">
                 {songsInSetlist.map(song => (
-                  <li key={song.id} className="flex items-center justify-between p-2 rounded-md hover:bg-muted">
-                    <span>{song.title} <span className="text-sm text-muted-foreground">- {song.artist || 'N/A'}</span></span>
+                  <li key={song.id} className="flex items-center justify-between p-3 rounded-md bg-black/20 hover:bg-black/40">
+                    <div>
+                      <span className="font-medium">{song.title}</span>
+                      <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
+                    </div>
                     <Button variant="ghost" size="icon" onClick={() => handleRemoveSongFromSetlist(song.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -238,22 +253,25 @@ export default function SetlistDetailPage() {
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-muted-foreground text-center py-4">
-                  {isDraggingOver ? '¡Suelta para añadir!' : 'Aún no hay canciones en este setlist.'}
+                  {isDraggingOver ? '¡Suelta para añadir!' : 'Arrastra canciones desde la biblioteca'}
                 </p>
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="glassmorphism">
           <CardHeader>
             <CardTitle>Añadir Canción desde la Biblioteca</CardTitle>
-            <Input 
-                placeholder="Buscar por título o artista..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="mt-2"
-            />
+             <div className="relative mt-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input 
+                    placeholder="Buscar por título o artista..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 bg-neutral-800/50 border-neutral-700 focus:ring-primary"
+                />
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="max-h-[400px] overflow-y-auto">
@@ -265,7 +283,7 @@ export default function SetlistDetailPage() {
                                     key={song.id}
                                     draggable="true"
                                     onDragStart={(e) => handleDragStart(e, song.id)}
-                                    className="cursor-grab active:cursor-grabbing"
+                                    className="cursor-grab active:cursor-grabbing hover:bg-muted/30"
                                 >
                                     <TableCell className="font-medium">{song.title}</TableCell>
                                     <TableCell>{song.artist || 'N/A'}</TableCell>
@@ -287,7 +305,7 @@ export default function SetlistDetailPage() {
 
        <div className="mt-12 text-center">
             <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
-                <Button size="lg" disabled={songsInSetlist.length === 0}>
+                <Button size="lg" disabled={songsInSetlist.length === 0} className="glow-primary-box">
                     <Rocket className="mr-2 h-5 w-5" />
                     Iniciar Presentación
                 </Button>
@@ -296,5 +314,3 @@ export default function SetlistDetailPage() {
     </main>
   );
 }
-
-    

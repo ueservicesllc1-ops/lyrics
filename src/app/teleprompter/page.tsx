@@ -122,7 +122,7 @@ function TeleprompterContent() {
           stopScrolling();
         }
       }
-    }, 100 - scrollSpeed * 10);
+    }, 100 - scrollSpeed * 9); // Adjusted for better speed range
   }, [scrollSpeed, stopScrolling]);
 
   const resetScroll = () => {
@@ -140,7 +140,8 @@ function TeleprompterContent() {
       stopScrolling();
       startScrolling();
     }
-  }, [scrollSpeed, startScrolling, stopScrolling]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scrollSpeed]);
   
   useEffect(() => {
     return () => stopScrolling(); // Cleanup on unmount
@@ -151,6 +152,7 @@ function TeleprompterContent() {
 
     const onSelect = (api: CarouselApi) => {
       setCurrentSongIndex(api.selectedScrollSnap());
+      scrollToSong(api.selectedScrollSnap());
     };
 
     carouselApi.on('select', onSelect);
@@ -158,11 +160,11 @@ function TeleprompterContent() {
     return () => {
       carouselApi.off('select', onSelect);
     };
-  }, [carouselApi]);
+  }, [carouselApi, songs]); // Added songs dependency
 
   const scrollToSong = (index: number) => {
-    if (!contentRef.current) return;
-    const songTitleId = `--- ${songs[index]?.title.toUpperCase()} ---`;
+    if (!contentRef.current || !songs[index]) return;
+    const songTitleId = `--- ${songs[index].title.toUpperCase()} ---`;
     const fullText = contentRef.current.innerText;
     const position = fullText.indexOf(songTitleId);
     
@@ -172,11 +174,11 @@ function TeleprompterContent() {
     const scrollRatio = lineOfSong / totalLines;
     
     contentRef.current.scrollTop = contentRef.current.scrollHeight * scrollRatio;
+    resetScroll(); // Reset scroll to start from the top of the song
   };
 
   const handleCarouselSelect = (index: number) => {
       carouselApi?.scrollTo(index);
-      scrollToSong(index);
   }
 
   if (isLoading) {
@@ -196,13 +198,13 @@ function TeleprompterContent() {
 
   return (
     <div className="container mx-auto p-4 flex flex-col items-center gap-8">
-      <Card className="w-full max-w-4xl">
+      <Card className="w-full max-w-5xl glassmorphism">
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle>Teleprompter: {setlistName}</CardTitle>
+              <CardTitle className="glow-primary-text">{setlistName}</CardTitle>
               <CardDescription>
-                {songs[currentSongIndex]?.title || 'Setlist cargado'}
+                En reproducción: {songs[currentSongIndex]?.title || 'Setlist cargado'}
               </CardDescription>
             </div>
             <Button variant="outline" onClick={() => router.back()}>
@@ -214,14 +216,15 @@ function TeleprompterContent() {
         <CardContent>
           <div
             ref={contentRef}
-            className={`h-[60vh] overflow-y-scroll bg-neutral-900 text-white p-8 text-4xl leading-relaxed font-sans border rounded-md whitespace-pre-wrap transition-transform duration-300 text-center ${
+            className={`h-[60vh] overflow-y-scroll bg-neutral-900/80 text-white p-8 text-5xl leading-relaxed font-sans border rounded-md whitespace-pre-wrap transition-transform duration-300 text-center ${
               isMirrored ? 'scale-x-[-1]' : ''
             }`}
+            style={{ textShadow: '0 0 10px rgba(255, 255, 255, 0.7)'}}
           >
             {lyrics}
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
+        <CardFooter className="flex flex-col gap-6">
             <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-4">
                  <div className="flex items-center gap-4">
                     <Button
@@ -229,6 +232,7 @@ function TeleprompterContent() {
                     variant="outline"
                     size="icon"
                     aria-label={isScrolling ? 'Pause' : 'Play'}
+                    className="w-12 h-12 rounded-full"
                     >
                     {isScrolling ? (
                         <Pause className="h-6 w-6" />
@@ -241,6 +245,7 @@ function TeleprompterContent() {
                     variant="outline"
                     size="icon"
                     aria-label="Reset"
+                    className="w-12 h-12 rounded-full"
                     >
                     <RefreshCw className="h-6 w-6" />
                     </Button>
@@ -268,14 +273,14 @@ function TeleprompterContent() {
                 </div>
             </div>
             {songs.length > 0 && (
-            <div className='w-full max-w-xl'>
+            <div className='w-full max-w-2xl'>
                  <Carousel setApi={setCarouselApi} className="w-full">
                     <CarouselContent>
                         {songs.map((song, index) => (
                         <CarouselItem key={song.id} className="basis-1/2 md:basis-1/3">
                             <Button
                             variant={index === currentSongIndex ? 'secondary' : 'outline'}
-                            className="w-full"
+                            className="w-full truncate"
                             onClick={() => handleCarouselSelect(index)}
                             >
                             {song.title}

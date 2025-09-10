@@ -31,7 +31,7 @@ import {
 } from 'firebase/firestore';
 import SetlistCard from '@/components/SetlistCard';
 import type { Setlist } from '@/app/setlists/page';
-import { Search } from 'lucide-react';
+import { Search, Rocket } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -117,16 +117,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Columna Izquierda - Biblioteca */}
         <div className="lg:col-span-2">
-           <Card className="h-full flex flex-col bg-card/80 backdrop-blur-sm border-border/20">
+           <Card className="h-full flex flex-col glassmorphism">
             <CardHeader>
-              <CardTitle className="text-primary">Biblioteca de Canciones</CardTitle>
+              <CardTitle className="text-primary glow-primary-text">Biblioteca de Canciones</CardTitle>
                <div className="relative mt-4">
                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search"
+                  placeholder="Buscar en la biblioteca..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-neutral-800 border-neutral-700 focus:ring-primary"
+                  className="pl-9 bg-neutral-800/50 border-neutral-700 focus:ring-primary"
                 />
               </div>
             </CardHeader>
@@ -134,10 +134,10 @@ export default function DashboardPage() {
               {isLoadingSongs ? (
                 <p>Cargando canciones...</p>
               ) : filteredSongs.length > 0 ? (
-                <div className="overflow-y-auto">
+                <div className="overflow-y-auto max-h-[60vh]">
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-b-border/20">
+                      <TableRow className="border-b-border/20 hover:bg-transparent">
                         <TableHead>Título</TableHead>
                         <TableHead>Artista</TableHead>
                       </TableRow>
@@ -167,9 +167,9 @@ export default function DashboardPage() {
 
         {/* Columna Derecha - Setlists */}
         <div className="lg:col-span-1">
-           <Card className="h-full flex flex-col bg-card/80 backdrop-blur-sm border-border/20">
+           <Card className="h-full flex flex-col glassmorphism">
             <CardHeader>
-              <CardTitle className="text-primary">Mis Setlists</CardTitle>
+              <CardTitle className="text-primary glow-primary-text">Mis Setlists</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow">
               {isLoadingSetlists ? (
@@ -179,21 +179,14 @@ export default function DashboardPage() {
                   {setlists.map((setlist) => (
                     <SetlistCard key={setlist.id} setlist={setlist} />
                   ))}
-                   <Link href="/setlists" className='w-full mt-2'>
-                        <Button variant="ghost" className="w-full text-left justify-between hover:bg-neutral-700/50 p-4 h-auto">
-                            <div>
-                                <p>Ver todos los Setlists</p>
-                            </div>
-                        </Button>
-                   </Link>
                 </div>
               ) : (
-                 <div className="text-center py-4">
+                 <div className="text-center py-4 flex flex-col items-center justify-center h-full">
                     <p className="text-muted-foreground mb-4">
                         Aún no has creado ningún setlist.
                     </p>
                     <Link href="/setlists">
-                        <Button className="bg-[#D4A32D] text-black hover:bg-[#D4A32D]/90 font-bold">
+                        <Button className="glow-primary-box">
                             Crear Mi Primer Setlist
                         </Button>
                     </Link>
@@ -202,11 +195,19 @@ export default function DashboardPage() {
             </CardContent>
              <CardFooter>
                <Link href="/setlists" className='w-full'>
-                <Button className="w-full bg-[#D4A32D] text-black hover:bg-[#D4A32D]/90 font-bold">Crear Nuevo Setlist</Button>
+                <Button className="w-full glow-primary-box">Crear Nuevo Setlist</Button>
                </Link>
             </CardFooter>
           </Card>
         </div>
+      </div>
+      <div className="mt-12 text-center">
+        <Link href="/setlists">
+            <Button size="lg" className="w-full max-w-md glow-primary-box">
+                <Rocket className="mr-2 h-5 w-5" />
+                Ir a Mis Setlists
+            </Button>
+        </Link>
       </div>
     </main>
   );

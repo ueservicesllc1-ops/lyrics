@@ -134,7 +134,7 @@ export default function SetlistsPage() {
     <main className="container mx-auto p-4">
       <header className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-bold">Mis Setlists</h1>
+          <h1 className="text-4xl font-bold glow-primary-text">Mis Setlists</h1>
           <p className="text-muted-foreground">
             Crea y organiza tus setlists para los eventos.
           </p>
@@ -142,12 +142,12 @@ export default function SetlistsPage() {
         <div className="flex items-center gap-4">
            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="glow-primary-box">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Crear Nuevo Setlist
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md glassmorphism">
               <DialogHeader>
                 <DialogTitle>Crear Nuevo Setlist</DialogTitle>
                 <DialogDescription>
@@ -208,7 +208,7 @@ export default function SetlistsPage() {
                   )}
                 </div>
                 <DialogFooter>
-                  <Button type="submit" disabled={isLoading}>
+                  <Button type="submit" disabled={isLoading} className="glow-primary-box">
                     {isLoading ? 'Creando...' : 'Crear Setlist'}
                   </Button>
                 </DialogFooter>
@@ -222,11 +222,11 @@ export default function SetlistsPage() {
       </header>
 
       <div>
-        <Card>
+        <Card className="glassmorphism">
           <CardHeader>
             <CardTitle>Próximos Eventos</CardTitle>
             <CardDescription>
-              Aquí aparecerán tus setlists guardados. Haz clic en 'Ver Detalles' para añadir canciones y lanzar el teleprompter.
+              Aquí aparecerán tus setlists guardados. Haz clic para añadir canciones y lanzar el teleprompter.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -250,7 +250,7 @@ export default function SetlistsPage() {
         </Card>
       </div>
        <div className="mt-8 text-center">
-            <Button size="lg" disabled>
+            <Button size="lg" disabled className="cursor-not-allowed">
                 <Rocket className="mr-2 h-5 w-5" />
                 Elige un setlist para iniciar la presentación
             </Button>
