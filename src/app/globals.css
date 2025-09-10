@@ -4,6 +4,38 @@
 
 @layer base {
   :root {
+    --background: 220 20% 95%; /* Light Gray */
+    --foreground: 220 10% 20%; /* Dark Gray */
+
+    --card: 220 20% 100%; /* White */
+    --card-foreground: 220 10% 20%;
+
+    --popover: 220 20% 100%;
+    --popover-foreground: 220 10% 20%;
+    
+    --primary: 217 60% 50%; /* Blue */
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 220 15% 90%; /* Light Gray accent */
+    --secondary-foreground: 220 10% 20%;
+
+    --muted: 220 15% 90%;
+    --muted-foreground: 220 10% 45%;
+
+    --accent: 40 90% 60%; /* Yellow/Orange */
+    --accent-foreground: 220 10% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 15% 85%;
+    --input: 220 15% 88%;
+    --ring: 217 60% 50%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
     --background: 220 10% 10%; /* Dark charcoal */
     --foreground: 210 20% 95%; /* Light silver */
 
@@ -13,8 +45,8 @@
     --popover: 220 10% 10%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 35 80% 60%; /* Muted Gold/Bronze */
-    --primary-foreground: 220 10% 10%;
+    --primary: 217 60% 50%; /* Blue */
+    --primary-foreground: 210 20% 98%;
 
     --secondary: 220 10% 25%; /* Mid-tone gray */
     --secondary-foreground: 210 20% 95%;
@@ -22,47 +54,15 @@
     --muted: 220 10% 25%;
     --muted-foreground: 215 15% 65%;
 
-    --accent: 220 10% 25%;
-    --accent-foreground: 210 20% 95%;
+    --accent: 40 90% 60%; /* Yellow/Orange */
+    --accent-foreground: 220 10% 10%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 220 10% 30%; /* Lighter border for metallic edge */
     --input: 220 10% 25%;
-    --ring: 35 80% 60%;
-
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 220 10% 10%;
-    --foreground: 210 20% 95%;
-
-    --card: 220 10% 15%;
-    --card-foreground: 210 20% 95%;
-
-    --popover: 220 10% 10%;
-    --popover-foreground: 210 20% 95%;
-
-    --primary: 35 80% 60%;
-    --primary-foreground: 220 10% 10%;
-
-    --secondary: 220 10% 25%;
-    --secondary-foreground: 210 20% 95%;
-
-    --muted: 220 10% 25%;
-    --muted-foreground: 215 15% 65%;
-
-    --accent: 220 10% 25%;
-    --accent-foreground: 210 20% 95%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 220 10% 30%;
-    --input: 220 10% 25%;
-    --ring: 35 80% 60%;
+    --ring: 40 90% 60%;
   }
 }
 
@@ -75,17 +75,5 @@
     color: hsl(var(--foreground));
     min-height: 100vh;
     font-family: 'Inter', sans-serif;
-    /* Subtle noise texture for a brushed metal feel */
-    background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.01) 25%, transparent 25%), 
-                      linear-gradient(-45deg, rgba(255, 255, 255, 0.01) 25%, transparent 25%);
-    background-size: 4px 4px;
-  }
-
-  /* Giving cards a subtle gradient to look more metallic */
-  .card-metallic {
-     background-image: linear-gradient(to bottom, hsl(var(--card)) 0%, hsl(var(--background)) 150%);
-     border-width: 1px;
-     border-color: hsl(var(--border) / 0.6);
-     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
   }
 }

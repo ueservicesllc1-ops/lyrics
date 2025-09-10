@@ -6,13 +6,12 @@ import { doc, getDoc, updateDoc, arrayUnion, arrayRemove, collection, getDocs, q
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Trash2, Rocket, Search } from 'lucide-react';
+import { AlertTriangle, Trash2, Rocket, Search, ChevronRight, GripVertical } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import Link from 'next/link';
+import { Setlist } from '../page';
 
 // Interfaces
 interface Song {
@@ -20,14 +19,6 @@ interface Song {
   title: string;
   artist: string;
   lyrics: string;
-}
-
-interface Setlist {
-  id: string;
-  name: string;
-  date: string | { toDate: () => Date }; // Can be ISO string or Firestore Timestamp
-  songs: string[];
-  userId: string;
 }
 
 export default function SetlistDetailPage() {
@@ -53,35 +44,29 @@ export default function SetlistDetailPage() {
     setError(null);
 
     try {
-      // Fetch the specific setlist document
       const setlistDocRef = doc(db, 'setlists', setlistId);
       const setlistDoc = await getDoc(setlistDocRef);
 
       if (!setlistDoc.exists() || setlistDoc.data().userId !== user.uid) {
-        throw new Error('El setlist no fue encontrado o no tienes permiso para verlo.');
+        throw new Error('Setlist not found or you do not have permission to view it.');
       }
       
       const setlistData = { id: setlistDoc.id, ...setlistDoc.data() } as Setlist;
-      // Ensure songs array exists
       if (!setlistData.songs) {
         setlistData.songs = [];
       }
       setSetlist(setlistData);
 
-      // Fetch all available songs from the general library
       const songsQuery = query(collection(db, 'songs'), orderBy('title', 'asc'));
       const songsSnapshot = await getDocs(songsQuery);
       const allSongsData = songsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Song));
       
       setAvailableSongs(allSongsData);
 
-      // Filter songs that are in the current setlist
       if (setlistData.songs && setlistData.songs.length > 0) {
-        // We need to fetch the full song details for the IDs in the setlist
         const songDetailsPromises = setlistData.songs.map(songId => getDoc(doc(db, 'songs', songId)));
         const songDetailsDocs = await Promise.all(songDetailsPromises);
         
-        // Maintain the order from the setlist
         const songsInSetlistMap = new Map<string, Song>();
         songDetailsDocs.forEach(doc => {
             if (doc.exists()) {
@@ -102,7 +87,7 @@ export default function SetlistDetailPage() {
 
     } catch (e: any) {
       console.error("Error fetching data: ", e);
-      setError(e.message || 'No se pudieron cargar los datos del setlist.');
+      setError(e.message || 'Could not load setlist data.');
     } finally {
       setIsLoading(false);
     }
@@ -120,17 +105,17 @@ export default function SetlistDetailPage() {
 
 
   const handleAddSongToSetlist = async (songId: string) => {
-    if (!songId || setlist?.songs?.includes(songId)) return; // Prevent duplicates
+    if (!songId || setlist?.songs?.includes(songId)) return;
     setError(null);
     try {
       const setlistDocRef = doc(db, 'setlists', setlistId);
       await updateDoc(setlistDocRef, {
         songs: arrayUnion(songId)
       });
-      await fetchSetlistAndSongs(); // Refresh data
+      await fetchSetlistAndSongs();
     } catch (e: any) {
        console.error("Error adding song: ", e);
-       setError('No se pudo añadir la canción. ' + e.message);
+       setError('Could not add song. ' + e.message);
     }
   };
   
@@ -141,20 +126,19 @@ export default function SetlistDetailPage() {
       await updateDoc(setlistDocRef, {
         songs: arrayRemove(songId)
       });
-      await fetchSetlistAndSongs(); // Refresh data
+      await fetchSetlistAndSongs();
     } catch (e: any) {
       console.error("Error removing song: ", e);
-      setError('No se pudo quitar la canción. ' + e.message);
+      setError('Could not remove song. ' + e.message);
     }
   };
 
-  // --- Drag and Drop Handlers ---
-  const handleDragStart = (e: DragEvent<HTMLTableRowElement>, songId: string) => {
+  const handleDragStart = (e: DragEvent<HTMLLIElement>, songId: string) => {
     e.dataTransfer.setData('songId', songId);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault();
     setIsDraggingOver(true);
   };
 
@@ -171,33 +155,6 @@ export default function SetlistDetailPage() {
     }
   };
 
-
-  if (isLoading || authLoading) {
-    return <div className="container mx-auto p-4 text-center">Cargando detalles del setlist...</div>;
-  }
-
-  if (error && !isLoading) {
-     return (
-      <main className="container mx-auto p-4">
-        <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <div className="mt-4">
-             <Button variant="outline" onClick={() => router.push('/setlists')}>Volver a Setlists</Button>
-        </div>
-      </main>
-    )
-  }
-  
-  if (!setlist) {
-    return <div className="container mx-auto p-4 text-center">No se encontró el setlist.</div>;
-  }
-  
-  const setlistDate = typeof setlist.date === 'string'
-    ? parseISO(setlist.date)
-    : setlist.date.toDate();
-
    const filteredAvailableSongs = availableSongs
     .filter(song => !setlist?.songs?.includes(song.id))
     .filter(song => 
@@ -205,112 +162,128 @@ export default function SetlistDetailPage() {
         (song.artist && song.artist.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
+  if (isLoading || authLoading) {
+    return <div className="container mx-auto p-4 text-center">Loading setlist details...</div>;
+  }
+
+  if (error) {
+     return (
+      <main className="container mx-auto p-4">
+        <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <div className="mt-4">
+             <Button variant="outline" onClick={() => router.push('/setlists')}>Back to Setlists</Button>
+        </div>
+      </main>
+    )
+  }
+  
+  if (!setlist) {
+    return <div className="container mx-auto p-4 text-center">Setlist not found.</div>;
+  }
+
   return (
-    <main className="container mx-auto p-4">
-       <header className="mb-8 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
-         <div>
-          <h1 className="text-4xl font-bold">{setlist.name}</h1>
-          <p className="text-muted-foreground">{format(setlistDate, 'PPP')}</p>
-        </div>
-        <div className="flex items-center gap-2">
-            <Link href="/">
-                <Button variant="outline">Volver al Dashboard</Button>
-            </Link>
-            <Button variant="outline" onClick={() => router.push('/setlists')}>
-                Volver a Setlists
-            </Button>
-        </div>
-      </header>
-      
-      <div className="grid gap-12 md:grid-cols-2">
-        <Card className="card-metallic">
-          <CardHeader>
-            <CardTitle>Canciones en este Setlist</CardTitle>
-            <CardDescription>Arrastra canciones aquí para añadirlas. Haz clic en la papelera para quitarlas.</CardDescription>
-          </CardHeader>
-          <CardContent 
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            onDragLeave={handleDragLeave}
-            className={`rounded-md border-2 border-dashed ${isDraggingOver ? 'border-primary bg-muted/50' : 'border-transparent'} transition-colors duration-200 p-2 min-h-[200px]`}
-          >
-            {songsInSetlist.length > 0 ? (
-              <div className="max-h-96 overflow-y-auto">
-              <ul className="space-y-2">
-                {songsInSetlist.map(song => (
-                  <li key={song.id} className="flex items-center justify-between p-3 rounded-md bg-secondary/50 hover:bg-secondary/80">
-                    <div>
-                      <span className="font-medium">{song.title}</span>
-                      <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={() => handleRemoveSongFromSetlist(song.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+    <main className="flex h-screen w-screen bg-background">
+       {/* Left Panel: Song Library */}
+       <div className="w-1/2 md:w-2/5 lg:w-1/3 flex flex-col border-r">
+            <header className="bg-primary text-primary-foreground p-4">
+                <h1 className="text-2xl font-bold">Song Library</h1>
+                <div className="relative mt-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary-foreground/70" />
+                    <Input 
+                        placeholder="Search"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-white/20 text-primary-foreground placeholder:text-primary-foreground/70 pl-9 border-0 focus-visible:ring-offset-0 focus-visible:ring-2 focus-visible:ring-white"
+                    />
+                </div>
+            </header>
+            <div className="flex-grow overflow-y-auto">
+                <ul className="divide-y">
+                    {filteredAvailableSongs.length > 0 ? (
+                        filteredAvailableSongs.map(song => (
+                            <li 
+                                key={song.id}
+                                draggable="true"
+                                onDragStart={(e) => handleDragStart(e, song.id)}
+                                className="flex items-center justify-between p-4 cursor-grab active:cursor-grabbing hover:bg-secondary"
+                            >
+                                <div>
+                                    <p className="font-semibold">{song.title}</p>
+                                    <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
+                                </div>
+                                <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                            </li>
+                        ))
+                    ) : (
+                        <li className="p-4 text-center text-muted-foreground">
+                            {availableSongs.length > 0 ? "No songs found." : "Library is empty."}
+                        </li>
+                    )}
+                </ul>
+            </div>
+       </div>
+
+        {/* Right Panel: Setlist */}
+       <div className="w-1/2 md:w-3/5 lg:w-2/3 flex flex-col">
+            <header className="flex items-center justify-between p-4 border-b">
+                 <div>
+                    <h1 className="text-2xl font-bold">{setlist.name}</h1>
+                    <p className="text-muted-foreground">{format(parseISO(setlist.date as string), 'PPP')}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
+                        <Button disabled={songsInSetlist.length === 0}>
+                            <Rocket className="mr-2 h-4 w-4" />
+                            Start
+                        </Button>
+                    </Link>
+                    <Button variant="outline" onClick={() => router.push('/setlists')}>
+                       Back
                     </Button>
-                  </li>
-                ))}
-              </ul>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full">
-                <p className="text-muted-foreground text-center py-4">
-                  {isDraggingOver ? '¡Suelta para añadir!' : 'Arrastra canciones desde la biblioteca'}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="card-metallic">
-          <CardHeader>
-            <CardTitle>Añadir Canción desde la Biblioteca</CardTitle>
-             <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input 
-                    placeholder="Buscar por título o artista..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9"
-                />
+                     <Button variant="ghost" size="icon">
+                        <GripVertical className="h-5 w-5" />
+                    </Button>
+                </div>
+            </header>
+             <div 
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+                onDragLeave={handleDragLeave}
+                className={`flex-grow p-4 bg-white transition-colors duration-200 ${isDraggingOver ? 'bg-secondary' : ''}`}
+            >
+                <div className={`h-full w-full border-2 border-dashed rounded-lg ${isDraggingOver ? 'border-primary' : 'border-border'}`}>
+                    {songsInSetlist.length > 0 ? (
+                         <ul className="divide-y p-2">
+                            {songsInSetlist.map((song, index) => (
+                            <li key={song.id} className="flex items-center justify-between p-3 rounded-md hover:bg-secondary">
+                                <div className="flex items-center gap-3">
+                                    <span className="flex items-center justify-center h-6 w-6 rounded-full bg-accent text-accent-foreground text-sm font-bold">
+                                        {index + 1}
+                                    </span>
+                                    <div>
+                                        <p className="font-semibold">{song.title}</p>
+                                        <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => handleRemoveSongFromSetlist(song.id)}>
+                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                            </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <div className="flex items-center justify-center h-full">
+                            <p className="text-muted-foreground">
+                                Drag songs here
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="max-h-[400px] overflow-y-auto">
-                <Table>
-                    <TableBody>
-                        {filteredAvailableSongs.length > 0 ? (
-                            filteredAvailableSongs.map(song => (
-                                <TableRow 
-                                    key={song.id}
-                                    draggable="true"
-                                    onDragStart={(e) => handleDragStart(e, song.id)}
-                                    className="cursor-grab active:cursor-grabbing hover:bg-secondary/50"
-                                >
-                                    <TableCell className="font-medium">{song.title}</TableCell>
-                                    <TableCell>{song.artist || 'N/A'}</TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                           <TableRow>
-                               <TableCell colSpan={2} className="text-center text-muted-foreground">
-                                   {availableSongs.length > 0 ? "No se encontraron canciones." : "La biblioteca está vacía."}
-                                </TableCell>
-                           </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-       <div className="mt-12 text-center">
-            <Link href={`/teleprompter?setlistId=${setlistId}`} passHref>
-                <Button size="lg" disabled={songsInSetlist.length === 0}>
-                    <Rocket className="mr-2 h-5 w-5" />
-                    Iniciar Presentación
-                </Button>
-            </Link>
-        </div>
+       </div>
     </main>
   );
 }
