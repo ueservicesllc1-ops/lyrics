@@ -31,10 +31,11 @@ import {
   doc,
   updateDoc,
   arrayUnion,
+  addDoc,
 } from 'firebase/firestore';
 import SetlistCard from '@/components/SetlistCard';
 import type { Setlist } from '@/app/setlists/page';
-import { Search, PlusCircle, CheckCircle } from 'lucide-react';
+import { Search, PlusCircle, CheckCircle, CalendarIcon, AlertTriangle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,11 +43,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
 
 interface Song {
   id: string;
@@ -66,6 +79,14 @@ export default function DashboardPage() {
   const [isLoadingSetlists, setIsLoadingSetlists] = useState(true);
 
   const [feedback, setFeedback] = useState<{ songId: string; message: string } | null>(null);
+
+  // State for the new setlist dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newSetlistName, setNewSetlistName] = useState('');
+  const [newSetlistDate, setNewSetlistDate] = useState<Date | undefined>();
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
 
   const fetchSongs = useCallback(async () => {
     setIsLoadingSongs(true);
@@ -127,6 +148,40 @@ export default function DashboardPage() {
       console.error('Error adding song to setlist:', error);
       setFeedback({ songId, message: 'Error' });
       setTimeout(() => setFeedback(null), 2000);
+    }
+  };
+
+  const handleCreateSetlist = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      setCreateError('Debes estar autenticado para crear un setlist.');
+      return;
+    }
+    if (!newSetlistName || !newSetlistDate) {
+      setCreateError('El nombre y la fecha son obligatorios.');
+      return;
+    }
+    setIsCreating(true);
+    setCreateError(null);
+    
+    const newSetlistData = {
+      name: newSetlistName,
+      date: newSetlistDate.toISOString(),
+      userId: user.uid,
+      songs: [],
+    };
+    
+    try {
+      await addDoc(collection(db, 'setlists'), newSetlistData);
+      setNewSetlistName('');
+      setNewSetlistDate(undefined);
+      await fetchSetlists();
+      setIsDialogOpen(false);
+    } catch (e) {
+      console.error('Error adding document: ', e);
+      setCreateError(`No se pudo guardar el setlist.`);
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -260,9 +315,77 @@ export default function DashboardPage() {
               )}
             </CardContent>
              <CardFooter className="flex-col gap-4 items-stretch">
-               <Link href="/setlists" className='w-full'>
-                <Button className="w-full">Crear Nuevo Setlist</Button>
-               </Link>
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button className="w-full">Crear Nuevo Setlist</Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Crear Nuevo Setlist</DialogTitle>
+                            <DialogDescription>
+                            Dale un nombre y una fecha a tu próximo evento.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleCreateSetlist}>
+                            <div className="grid gap-4 py-4">
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="setlist-name" className="text-right">
+                                    Nombre
+                                    </Label>
+                                    <Input
+                                    id="setlist-name"
+                                    placeholder="Ej: Concierto Acústico"
+                                    value={newSetlistName}
+                                    onChange={(e) => setNewSetlistName(e.target.value)}
+                                    className="col-span-3"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="setlist-date" className="text-right">
+                                    Fecha
+                                    </Label>
+                                    <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                        variant={'outline'}
+                                        className={cn(
+                                            'col-span-3 justify-start text-left font-normal',
+                                            !newSetlistDate && 'text-muted-foreground'
+                                        )}
+                                        >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {newSetlistDate ? (
+                                            format(newSetlistDate, 'PPP')
+                                        ) : (
+                                            <span>Elige una fecha</span>
+                                        )}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                        mode="single"
+                                        selected={newSetlistDate}
+                                        onSelect={setNewSetlistDate}
+                                        initialFocus
+                                        />
+                                    </PopoverContent>
+                                    </Popover>
+                                </div>
+                                {createError && !isCreating && (
+                                    <Alert variant="destructive" className="col-span-4">
+                                    <AlertTriangle className="h-4 w-4" />
+                                    <AlertDescription>{createError}</AlertDescription>
+                                    </Alert>
+                                )}
+                            </div>
+                            <DialogFooter>
+                            <Button type="submit" disabled={isCreating} className='bg-accent hover:bg-accent/90 text-accent-foreground'>
+                                {isCreating ? 'Creando...' : 'Crear Setlist'}
+                            </Button>
+                            </DialogFooter>
+                        </form>
+                    </DialogContent>
+                </Dialog>
                <Link href="/setlists" className='w-full'>
                 <Button className="w-full" variant="secondary">Ir a Mis Setlists</Button>
                </Link>
