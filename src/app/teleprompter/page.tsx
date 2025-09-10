@@ -273,10 +273,15 @@ function TeleprompterContent() {
                     {/* Right Controls */}
                     <div className="flex-1 flex justify-end items-center gap-6">
                         <div className="flex items-center gap-2">
-                           <Label className="text-sm shrink-0">Tamaño</Label>
-                           <Button onClick={() => handleFontSizeChange('small')} variant={fontSize === 'text-5xl' ? 'secondary' : 'outline'} size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">Pequeño</Button>
-                           <Button onClick={() => handleFontSizeChange('medium')} variant={fontSize === 'text-6xl' ? 'secondary' : 'outline'} size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">Mediano</Button>
-                           <Button onClick={() => handleFontSizeChange('large')} variant={fontSize === 'text-7xl' ? 'secondary' : 'outline'} size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">Grande</Button>
+                           <Button onClick={() => handleFontSizeChange('small')} variant={fontSize === 'text-5xl' ? 'secondary' : 'outline'} size="icon" className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                             <span className='font-bold text-xs'>A</span>
+                           </Button>
+                           <Button onClick={() => handleFontSizeChange('medium')} variant={fontSize === 'text-6xl' ? 'secondary' : 'outline'} size="icon" className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                             <span className='font-bold text-sm'>A</span>
+                           </Button>
+                           <Button onClick={() => handleFontSizeChange('large')} variant={fontSize === 'text-7xl' ? 'secondary' : 'outline'} size="icon" className="h-9 w-9 bg-white/10 hover:bg-white/20 text-white border-white/20">
+                             <span className='font-bold text-base'>A</span>
+                           </Button>
                         </div>
                         <div className="flex items-center gap-2 w-full max-w-xs">
                             <Label htmlFor="speed" className='shrink-0'>Velocidad</Label>
