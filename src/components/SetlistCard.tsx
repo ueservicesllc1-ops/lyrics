@@ -16,7 +16,7 @@ export default function SetlistCard({ setlist }: SetlistCardProps) {
     
   return (
     <Link href={`/setlists/${setlist.id}`} className="block group">
-      <div className="w-full text-left justify-between bg-neutral-900 hover:bg-neutral-800 p-4 rounded-lg flex items-center transition-all duration-200 border border-neutral-700/60">
+      <div className="w-full text-left justify-between bg-secondary/50 hover:bg-secondary p-4 rounded-lg flex items-center transition-all duration-200 border border-border/60">
         <div className='flex-grow overflow-hidden'>
           <p className="font-semibold text-white truncate">{setlist.name}</p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">

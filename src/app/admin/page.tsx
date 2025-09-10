@@ -12,7 +12,7 @@ export default function AdminPage() {
         </p>
       </header>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="card-metallic">
           <CardHeader>
             <CardTitle>Canciones</CardTitle>
           </CardHeader>
@@ -25,7 +25,7 @@ export default function AdminPage() {
             </Link>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="card-metallic">
           <CardHeader>
             <CardTitle>Setlists</CardTitle>
           </CardHeader>

@@ -146,7 +146,7 @@ export default function SongsPage() {
 
       <div className="grid gap-12 md:grid-cols-2">
         {isAdmin && (
-          <Card>
+          <Card className="card-metallic">
             <CardHeader>
               <CardTitle>Añadir Nueva Canción</CardTitle>
               <CardDescription>
@@ -195,7 +195,7 @@ export default function SongsPage() {
         )}
 
         <div className={!isAdmin ? 'md:col-span-2' : ''}>
-          <Card>
+          <Card className="card-metallic">
             <CardHeader>
               <CardTitle>Biblioteca</CardTitle>
               <CardDescription>

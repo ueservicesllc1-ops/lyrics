@@ -223,7 +223,7 @@ export default function SetlistDetailPage() {
       </header>
       
       <div className="grid gap-12 md:grid-cols-2">
-        <Card>
+        <Card className="card-metallic">
           <CardHeader>
             <CardTitle>Canciones en este Setlist</CardTitle>
             <CardDescription>Arrastra canciones aquí para añadirlas. Haz clic en la papelera para quitarlas.</CardDescription>
@@ -238,7 +238,7 @@ export default function SetlistDetailPage() {
               <div className="max-h-96 overflow-y-auto">
               <ul className="space-y-2">
                 {songsInSetlist.map(song => (
-                  <li key={song.id} className="flex items-center justify-between p-3 rounded-md bg-muted/30 hover:bg-muted/50">
+                  <li key={song.id} className="flex items-center justify-between p-3 rounded-md bg-secondary/50 hover:bg-secondary/80">
                     <div>
                       <span className="font-medium">{song.title}</span>
                       <p className="text-sm text-muted-foreground">{song.artist || 'N/A'}</p>
@@ -260,7 +260,7 @@ export default function SetlistDetailPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="card-metallic">
           <CardHeader>
             <CardTitle>Añadir Canción desde la Biblioteca</CardTitle>
              <div className="relative mt-2">
@@ -283,7 +283,7 @@ export default function SetlistDetailPage() {
                                     key={song.id}
                                     draggable="true"
                                     onDragStart={(e) => handleDragStart(e, song.id)}
-                                    className="cursor-grab active:cursor-grabbing hover:bg-muted/50"
+                                    className="cursor-grab active:cursor-grabbing hover:bg-secondary/50"
                                 >
                                     <TableCell className="font-medium">{song.title}</TableCell>
                                     <TableCell>{song.artist || 'N/A'}</TableCell>

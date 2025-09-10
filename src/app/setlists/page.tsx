@@ -222,7 +222,7 @@ export default function SetlistsPage() {
       </header>
 
       <div>
-        <Card>
+        <Card className="card-metallic">
           <CardHeader>
             <CardTitle>Próximos Eventos</CardTitle>
             <CardDescription>

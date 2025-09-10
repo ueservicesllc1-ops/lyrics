@@ -31,7 +31,7 @@ import {
 } from 'firebase/firestore';
 import SetlistCard from '@/components/SetlistCard';
 import type { Setlist } from '@/app/setlists/page';
-import { Search, Music2 } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 interface Song {
   id: string;
@@ -117,7 +117,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Columna Izquierda - Biblioteca */}
         <div className="lg:col-span-2">
-           <Card className="h-full flex flex-col border-neutral-800">
+           <Card className="h-full flex flex-col card-metallic">
             <CardHeader>
               <CardTitle>Biblioteca de Canciones</CardTitle>
                <div className="relative mt-4">
@@ -126,7 +126,7 @@ export default function DashboardPage() {
                   placeholder="Buscar en la biblioteca..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 bg-neutral-900/50 border-neutral-700"
+                  className="pl-9"
                 />
               </div>
             </CardHeader>
@@ -167,7 +167,7 @@ export default function DashboardPage() {
 
         {/* Columna Derecha - Setlists */}
         <div className="lg:col-span-1">
-           <Card className="h-full flex flex-col border-neutral-800">
+           <Card className="h-full flex flex-col card-metallic">
             <CardHeader>
               <CardTitle>Mis Setlists</CardTitle>
             </CardHeader>
@@ -190,10 +190,10 @@ export default function DashboardPage() {
             </CardContent>
              <CardFooter className="flex-col gap-4 items-stretch">
                <Link href="/setlists" className='w-full'>
-                <Button className="w-full bg-yellow-500 text-black hover:bg-yellow-400">Crear Nuevo Setlist</Button>
+                <Button className="w-full">Crear Nuevo Setlist</Button>
                </Link>
                <Link href="/setlists" className='w-full'>
-                <Button className="w-full" variant="outline">Ir a Mis Setlists</Button>
+                <Button className="w-full" variant="secondary">Ir a Mis Setlists</Button>
                </Link>
             </CardFooter>
           </Card>
